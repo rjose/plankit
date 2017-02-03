@@ -1,0 +1,47 @@
+\documentclass{article}
+
+
+\title{Plan Kit}
+\author{Rino Jose}
+\date{January 27, 2017}
+
+
+\begin{document}
+
+\maketitle
+
+The goal is to write progams in C that can answer questions about planned work.
+I'd like these programs to be pluggable into web services that can run as
+little functional modules.
+
+Queries will be sent to these modules over sockets. Responses will be returned
+over sockets. There may be ways to load data outside of this mechanism, but
+it should also be possible to create and modify records in this way.
+
+There should be a set of programs that can answer questions non-destructively.
+That is, they should be able to operate on a version of data and create
+alternate versions for use in scenario-based analysis. If possible, this
+alternate reality tree could be represented as operations on a version of the
+data and applied to the data at different points. Perhaps a DSL would be appropriate
+to describe these types of changes.
+
+Along these lines, it would be useful if we could create optimizers that could
+explore various alternate realities to identify interesting cases to consider.
+
+It would be helpful to be able to describe the observed reality in the same terms
+so that one could generate alternate realities by changing the base version while
+maintaining actual events constant.
+
+\section{Steps}
+Here are some steps to get started
+
+\begin{enumerate}
+    \item Get infrastructure in place to build a basic app
+
+    \item Create a model/DSL for modeling state and events
+\end{enumerate}
+
+The first step is straightforward. We'll follow along with the ``21st Century C'' book.
+
+
+\end{document} 

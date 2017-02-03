@@ -1,0 +1,6 @@
+*.aux
+*.pdf
+*.dvi
+*.log
+plankit
+*.gz

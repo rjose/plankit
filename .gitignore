@@ -6,3 +6,4 @@ plankit
 *.gz
 *.o
 lex.*
+main

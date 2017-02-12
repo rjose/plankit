@@ -1,7 +1,3 @@
-extern int yylex();
-extern FILE* yyin;
-
-#define MAX_WORD_LEN 128
 
 typedef struct {
     gchar type;  // vals: i, d, s, e
@@ -59,17 +55,6 @@ DictEntry* find_entry(const char* word) {
 }
 
 
-// This is the main entry point from the interpreter
-void handle_word(const char *word) {
-    DictEntry *entry = find_entry(word);
-    if (entry == NULL) {
-        printf("TODO: Handle word not found: %s\n", word);
-    }
-    else {
-        printf("Found entry: %s\n", entry->word);
-    }
-}
-
 
 // -----------------------------------------------------------------------------
 // Builds initial dictionary
@@ -90,7 +75,29 @@ void build_dictionary() {
 }
 
 
+typedef struct {
+    gchar type;  // W, I, D, S
+    const gchar *word;
+} Token;
+
+
+Token get_token() {
+    Token result;
+    result.type = yylex();
+    result.word = yytext;
+    return result;
+}
+
+
 int main() {
-    build_dictionary();
-    yylex();
+//    build_dictionary();
+
+    // Control loop
+    while(1) {
+        Token token = get_token();
+        printf("Token (%c): %s\n", token.type, token.word);
+        // TODO: Look up token, etc.
+
+        if (token.type == EOF) break;
+    }
 }

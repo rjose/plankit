@@ -1,0 +1,30 @@
+NOTES
+=====
+
+Feb 11, 2017
+------------
+
+>> Sat Feb 11 18:50:42 PST 2017
+Let's start by creating all of the files that I've identified. Then, I want to
+create some structures so I can create the globals. I'll add these to the
+Makefile and get everything to build.
+
+
+>> Sat Feb 11 19:12:09 PST 2017
+I should use flex to parse numbers and strings. We can return a character to
+indicate what type was returned.
+
+
+>> Sat Feb 11 19:40:59 PST 2017
+OK, let's create empty versions of all the files...Done!
+
+
+>> Sat Feb 11 19:46:04 PST 2017
+OK, let's create a get_word routine. I think we should leverage the lexer here
+and include the type info as well as the word.
+
+
+>> Sat Feb 11 19:59:04 PST 2017
+OK, I have the get_token subroutine working. Let's distinguish between an int,
+a double, and a word. After that, I think we should handle the search for a
+word in the dictionary. Maybe we can do the search tomorrow.

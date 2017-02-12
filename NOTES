@@ -74,3 +74,7 @@ Let's work out a documentation style and then apply it to all of our files.
 Let's check in and then take a break. I think I've figured out a comment style
 that works. I wonder what happens if we add doxygen comments to the inside
 of a function?
+
+
+>> Sun Feb 12 12:51:30 PST 2017
+Let's add some basic documentation to each of our files.

@@ -13,6 +13,7 @@ The main function sets up the initial dictionary and the main control loop that
 basically gets a token from the input stream and executes it.
 
 Errors are handled via a long jump.
+
 */
 // =============================================================================
 
@@ -58,8 +59,7 @@ int main() {
         if (_mode == 'E') {
             entry = find_entry(token.word);
             if (entry) {
-                // TODO: execute(entry);
-                printf("TODO: Execute entry: %s\n", entry->word);
+                execute(entry);
             }
             else {
                 push_param(token);

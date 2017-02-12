@@ -52,11 +52,8 @@ that we can control the extensions dynamically.
 void build_dictionary() {
     Entry *entry;
 
-    entry = add_entry(":");
-    entry->routine = NULL;  // TODO: Set this
-
-    entry = add_entry(";");
-    entry->routine = NULL;  // TODO: Set this
+    entry = add_entry("hi");
+    entry->routine = EC_print_hi;
 }
 
 

@@ -1,12 +1,13 @@
 #pragma once
 
-typedef void (*entry_routine_ptr)(gpointer dict_entry);
+typedef void (*entry_routine_ptr)(gpointer entry);
 
 typedef struct {
     gchar word[MAX_WORD_LEN];
     GArray *params;  // Param[]
-    entry_routine_ptr routine;   // What to execute for entry
+    entry_routine_ptr routine;
 } Entry;
 
 
+void execute(gpointer entry);
 void free_entry(gpointer entry);

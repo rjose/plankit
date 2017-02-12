@@ -19,3 +19,4 @@ extern gchar _mode;
 extern jmp_buf _error_jmp_buf;
 
 const gchar *error_type_to_string(gint error_type);
+Token get_token();

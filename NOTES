@@ -64,3 +64,13 @@ Alright, I'm ready to add the setjmp and longjmp. Let's see how this works.
 >> Sun Feb 12 09:27:49 PST 2017
 Have error handling! Let's check in and then take a break. After the break, I'll
 figure out a documentation style for this.
+
+
+>> Sun Feb 12 11:23:55 PST 2017
+Let's work out a documentation style and then apply it to all of our files.
+
+
+<< (40 min) Sun Feb 12 12:03:16 PST 2017
+Let's check in and then take a break. I think I've figured out a comment style
+that works. I wonder what happens if we add doxygen comments to the inside
+of a function?

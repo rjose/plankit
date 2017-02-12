@@ -7,3 +7,5 @@ plankit
 *.o
 lex.*
 main
+html/*
+latex/*

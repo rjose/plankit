@@ -10,3 +10,9 @@ $(P): $(OBJECTS)
 
 lex.yy.c: forth.flex
 	flex $<
+
+clean:
+	rm -f lex.yy.* *.o main
+
+doc:
+	doxygen doxygen.config

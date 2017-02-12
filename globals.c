@@ -20,3 +20,10 @@ const gchar *error_type_to_string(gint error_type) {
     }
     return result;
 }
+
+Token get_token() {
+    Token result;
+    result.type = yylex();
+    result.word = yytext;
+    return result;
+}

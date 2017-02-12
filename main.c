@@ -1,86 +1,3 @@
-
-typedef struct {
-    gchar type;  // vals: i, d, s, e
-
-    gint64 int_val;
-    gdouble double_val;
-    gchar *str_val;
-    gpointer entry_val;
-} EntryParam;
-
-typedef void (*entry_routine_ptr)(gpointer dict_entry);
-
-typedef struct {
-    gchar word[MAX_WORD_LEN];
-    GArray *params;  // EntryParams
-    entry_routine_ptr routine;   // What to execute for entry
-} DictEntry;
-
-
-// Task: Make a constant
-//     Create parameter stack
-//     Create return stack
-//     Return value from rules in lexer so it stops parsing at each word
-//     Change our main loop to one that reads tokens in a loop
-//     Implement make_constant
-//     Create dict entry for CONSTANT
-//     Hook make constant up to dict entry
-
-
-
-// Task: Make DictEntry a complete entity
-//     Should create dict_entry.[ch] files
-//     Create a DictEntry
-//     Free a DictEntry
-
-
-void make_constant(DictEntry *entry) {
-    // . Read next word from input
-    // . Create new entry
-    // . Pop value from stack and add to entries param
-    // . Set entry's routine to add_entry_param0_to_stack
-}
-
-
-GList *G_dictionary = NULL;
-
-
-
-DictEntry* find_entry(const char* word) {
-    for (GList* l=g_list_last(G_dictionary); l != NULL; l = l->prev) {
-        DictEntry *entry = l->data;
-        if (g_strcmp0(word, entry->word) == 0) return entry;
-    }
-    return NULL;
-}
-
-
-
-// -----------------------------------------------------------------------------
-// Builds initial dictionary
-//
-// NOTE: Entries are allocated and so it's appropriate to do a g_list_free_full
-//       if the dictionary should be rebuilt.
-// -----------------------------------------------------------------------------
-void build_dictionary() {
-    DictEntry *entry;
-
-    entry = g_new(DictEntry, 1);
-    g_strlcpy(entry->word, ":", MAX_WORD_LEN);
-    G_dictionary = g_list_append(G_dictionary, entry);
-
-    entry = g_new(DictEntry, 1);
-    g_strlcpy(entry->word, ";", MAX_WORD_LEN);
-    G_dictionary = g_list_append(G_dictionary, entry);
-}
-
-
-typedef struct {
-    gchar type;  // W, I, D, S
-    const gchar *word;
-} Token;
-
-
 Token get_token() {
     Token result;
     result.type = yylex();
@@ -88,16 +5,51 @@ Token get_token() {
     return result;
 }
 
+void handle_error(gint error_type, Token token) {
+    fprintf(stderr, "%s: %s\n", error_type_to_string(error_type), token.word);
+    printf("TODO: Clear stacks and IC\n\n");
+
+    _mode = 'E';
+}
+
 
 int main() {
-//    build_dictionary();
+    Entry *entry;
+    gint error_type;
+
+    build_dictionary();
 
     // Control loop
     while(1) {
         Token token = get_token();
         printf("Token (%c): %s\n", token.type, token.word);
-        // TODO: Look up token, etc.
 
         if (token.type == EOF) break;
+
+        // If, executing...
+        if (_mode == 'E') {
+            entry = find_entry(token.word);
+            if (entry) {
+                // TODO: execute(entry);
+                printf("TODO: Execute entry: %s\n", entry->word);
+            }
+            else {
+                push_param(token);
+            }
+        }
+
+        // ...otherwise, we're compiling
+        else {
+            printf("TODO: Compile word: %s\n", token.word);
+        }
+
+        error_type = setjmp(_error_jmp_buf);
+        if (error_type != 0) {
+            handle_error(error_type, token);
+        }
+
     }
+
+    // Clean up
+    destroy_dictionary();
 }

@@ -28,3 +28,39 @@ and include the type info as well as the word.
 OK, I have the get_token subroutine working. Let's distinguish between an int,
 a double, and a word. After that, I think we should handle the search for a
 word in the dictionary. Maybe we can do the search tomorrow.
+
+
+>> Sat Feb 11 20:14:49 PST 2017
+Let's take a break for today and then return by adding some functionality to
+the dictionary.
+
+
+Feb 12, 2017
+------------
+
+>> Sun Feb 12 07:44:23 PST 2017
+Let's start by adding functionality to the dictionary. We need to create
+the dictionary and search it.
+
+
+>> Sun Feb 12 08:16:33 PST 2017
+OK, we can build and free a dictionary. Let's take a break and then add
+search to it. Once that's done, we can hook into an error routine.
+
+
+>> Sun Feb 12 08:44:04 PST 2017
+Let's add search and an error routine.
+
+
+>> Sun Feb 12 08:58:59 PST 2017
+OK, let's implement the push_param (at least the frame of it) and do some
+error handling.
+
+
+>> Sun Feb 12 09:04:01 PST 2017
+Alright, I'm ready to add the setjmp and longjmp. Let's see how this works.
+
+
+>> Sun Feb 12 09:27:49 PST 2017
+Have error handling! Let's check in and then take a break. After the break, I'll
+figure out a documentation style for this.

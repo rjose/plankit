@@ -82,3 +82,17 @@ Let's add some basic documentation to each of our files.
 
 >> Sun Feb 12 15:15:53 PST 2017
 Let's add a simple word that can print a message
+
+
+>> Sun Feb 12 15:30:33 PST 2017
+OK, we can execute a simple word. Let's take a break and then free our
+dictionary entries next. After that, let's see if we can push a param
+onto the stack.
+
+
+>> Sun Feb 12 17:40:08 PST 2017
+Let's free the dictionary entries next.
+
+
+>> Sun Feb 12 17:45:13 PST 2017
+OK, let's document the entry functions.

@@ -9,5 +9,6 @@ typedef struct {
 } Entry;
 
 
+Entry *new_entry();
 void execute(gpointer entry);
 void free_entry(gpointer entry);

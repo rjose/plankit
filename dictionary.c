@@ -31,7 +31,7 @@ Entry* find_entry(const gchar* word) {
 */
 // -----------------------------------------------------------------------------
 Entry *add_entry(const gchar *word) {
-    Entry *result = g_new(Entry, 1);
+    Entry *result = new_entry();
     g_strlcpy(result->word, word, MAX_WORD_LEN);
     _dictionary = g_list_append(_dictionary, result);
     return result;

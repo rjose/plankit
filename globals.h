@@ -15,10 +15,8 @@ Longest word we can have in an entry.
 // Error codes
 // -----------------------------------------------------------------------------
 
-/**
-Indicates that we couldn't find the token in the dictionary.
-*/
 #define ERR_UNKNOWN_WORD  1
+#define ERR_UNKNOWN_TOKEN_TYPE  2
 
 
 // =============================================================================
@@ -58,6 +56,8 @@ typedef struct {
 
 
 extern GList *_dictionary;
+extern GQueue *_stack;
+extern GQueue *_return_stack;
 extern gchar _mode;
 extern jmp_buf _error_jmp_buf;
 

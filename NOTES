@@ -96,3 +96,16 @@ Let's free the dictionary entries next.
 
 >> Sun Feb 12 17:45:13 PST 2017
 OK, let's document the entry functions.
+
+
+>> Sun Feb 12 17:49:11 PST 2017
+Next, let's create a constant. There's a bunch of things we need to do here. One
+is pushing a parameter onto the stack. Let's do that first and then take a break.
+
+
+(3 min) Sun Feb 12 17:52:19 PST 2017
+We need to get a stack into place and initialize it. I guess we should use a deque?
+
+
+<< (53) Sun Feb 12 18:45:13 PST 2017
+Can push a parameter onto the stack. Let's check in and then take a break.

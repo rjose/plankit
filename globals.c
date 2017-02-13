@@ -1,9 +1,23 @@
 /** \file
 */
 
+// =============================================================================
+// Globals
+// =============================================================================
+
 /** Global forth dictionary
 */
 GList *_dictionary = NULL;
+
+
+/** Global parameter stack
+*/
+GQueue *_stack = NULL;
+
+
+/** Global return stack
+*/
+GQueue *_return_stack = NULL;
 
 
 /** Global interpreter mode. The legal values are:
@@ -26,6 +40,7 @@ jmp_buf _error_jmp_buf;
 // Error strings
 static gchar unknown_word[] = "Unknown word";
 static gchar unknown_error[] = "Unknown error";
+static gchar unknown_token_type[] = "Unknown token type";
 
 
 // -----------------------------------------------------------------------------
@@ -41,6 +56,10 @@ const gchar *error_type_to_string(gint error_type) {
     switch(error_type) {
         case ERR_UNKNOWN_WORD:
             result = unknown_word;
+            break;
+
+        case ERR_UNKNOWN_TOKEN_TYPE:
+            result = unknown_token_type;
             break;
 
         default:

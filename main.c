@@ -47,6 +47,7 @@ int main() {
     gint error_type;
 
     build_dictionary();
+    create_stack();
 
     // Control loop
     while(1) {
@@ -62,7 +63,7 @@ int main() {
                 execute(entry);
             }
             else {
-                push_param(token);
+                push_token(token);
             }
         }
 
@@ -80,4 +81,5 @@ int main() {
 
     // Clean up
     destroy_dictionary();
+    destroy_stack();
 }

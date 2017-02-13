@@ -59,6 +59,12 @@ void push_param(Param* param) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pops a parameter off the stack.
+
+\note The caller of this is responsible for freeing the param when done with it.
+*/
+// -----------------------------------------------------------------------------
 Param *pop_param() {
     return g_queue_pop_tail(_stack);
 }

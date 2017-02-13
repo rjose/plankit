@@ -109,3 +109,9 @@ We need to get a stack into place and initialize it. I guess we should use a deq
 
 << (53) Sun Feb 12 18:45:13 PST 2017
 Can push a parameter onto the stack. Let's check in and then take a break.
+
+
+
+>> Sun Feb 12 21:23:35 PST 2017
+Let's create a constant entry next. We'll start by creating a function that
+can push its first paramter onto the stack.

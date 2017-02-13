@@ -54,6 +54,9 @@ void build_dictionary() {
 
     entry = add_entry("hi");
     entry->routine = EC_print_hi;
+
+    entry = add_entry("constant");
+    entry->routine = EC_constant;
 }
 
 

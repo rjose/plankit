@@ -10,5 +10,6 @@ typedef struct {
 
 
 Entry *new_entry();
+void add_entry_param(Entry *entry, Param param);
 void execute(gpointer entry);
 void free_entry(gpointer entry);

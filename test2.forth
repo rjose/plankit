@@ -1,1 +1,3 @@
-10 CONSTANT TEN
+10 constant TEN
+
+TEN

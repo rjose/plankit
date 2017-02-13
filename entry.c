@@ -23,7 +23,13 @@ void execute(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 Entry *new_entry() {
     Entry *result = g_new(Entry, 1);
+    result->params = g_array_new(FALSE, TRUE, sizeof(Param));
     return result;
+}
+
+
+void add_entry_param(Entry *entry, Param param) {
+    g_array_append_val(entry->params, param);
 }
 
 
@@ -34,5 +40,7 @@ Entry *new_entry() {
 */
 // -----------------------------------------------------------------------------
 void free_entry(gpointer gp_entry) {
+    Entry *entry = gp_entry;
+    g_array_free(entry->params, TRUE);
     g_free(gp_entry);
 }

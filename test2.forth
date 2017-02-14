@@ -1,3 +1,4 @@
-10 constant TEN
+10.0 constant TEN
+2 constant TWO
 
-TEN
+TEN TWO .p

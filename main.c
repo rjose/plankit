@@ -54,7 +54,6 @@ int main() {
     // Control loop
     while(1) {
         Token token = get_token();
-        printf("Token (%c): %s\n", token.type, token.word);
 
         if (token.type == EOF) break;
 

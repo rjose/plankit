@@ -42,6 +42,40 @@ void EC_push_param0(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Prints a parameter to stdout
+*/
+// -----------------------------------------------------------------------------
+void print_param(gpointer gp_param, gpointer user_data) {
+    Param *param = gp_param;
+    switch(param->type) {
+        case 'I':
+            printf("%ld ", param->val_int);
+            break;
+
+        case 'D':
+            printf("%lf ", param->val_double);
+            break;
+
+        default:
+            printf("<?> ");
+            break;
+    }
+}
+
+
+// -----------------------------------------------------------------------------
+/** Prints stack nondestructively. Top of stack is at the right.
+
+*/
+// -----------------------------------------------------------------------------
+void EC_print_stack(gpointer gp_entry) {
+    // NOTE: We're assuming that this goes from the first element to the last
+    g_queue_foreach(_stack, print_param, NULL);
+    printf("\n");
+}
+
+
 void EC_print_hi(gpointer gp_entry) {
     Entry *entry = gp_entry;
     printf("(%s) -> Howdy!\n", entry->word);

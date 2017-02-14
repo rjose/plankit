@@ -1,3 +1,6 @@
+/** \file ec_basic.h
+*/
+
 #pragma once
 
 void EC_constant(gpointer gp_entry);

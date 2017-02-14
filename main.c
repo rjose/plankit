@@ -1,6 +1,8 @@
 // =============================================================================
 /** \file
 
+\brief Defines main function and control loop.
+
 A program that implements a Forth interpreter that is used to construct
 application languages for Rino.
 

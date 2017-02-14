@@ -1,12 +1,15 @@
+/** \file param.h
+*/
+
 #pragma once
 
 typedef struct {
-    gchar type;  // vals: i, d, s, e
+    gchar type;           /**< \brief Indicates type of Param (see \ref param_types "Param types") */
 
-    gint64 val_int;
-    gdouble val_double;
-    gchar *val_str;
-    gpointer val_entry;
+    gint64 val_int;       /**< \brief Integer value of an 'I' param */
+    gdouble val_double;   /**< \brief Double value of a 'D' param */
+    gchar *val_str;       /**< \brief String value of an 'S' param */
+    gpointer val_entry;   /**< \brief Entry pointer value of an 'E' param */
 } Param;
 
 

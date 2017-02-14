@@ -1,11 +1,14 @@
+/** \file entry.h
+*/
+
 #pragma once
 
 typedef void (*entry_routine_ptr)(gpointer entry);
 
 typedef struct {
-    gchar word[MAX_WORD_LEN];
-    GArray *params;  // Param[]
-    entry_routine_ptr routine;
+    gchar word[MAX_WORD_LEN];   /**< \brief Key used for Dictionary lookup */
+    GArray *params;             /**< \brief Array of Param objects */
+    entry_routine_ptr routine;  /**< \brief Code to be run when Entry is executed */
 } Entry;
 
 

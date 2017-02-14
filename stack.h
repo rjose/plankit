@@ -1,3 +1,6 @@
+/** \file stack.h
+*/
+
 #pragma once
 
 void push_token(Token token);

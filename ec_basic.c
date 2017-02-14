@@ -1,8 +1,22 @@
-/** \file
+/** \file ec_basic.c
+
+\brief Basic entry routines for builtin words.
+
+These are entry routines for the basic builtin words as well as generic
+routines used when defining entries dynamically.
+
 */
 
-/** Entry code for "constant"
+// -----------------------------------------------------------------------------
+/** Creates a new constant entry.
+
+This reads the next token and uses this as the word for the entry. It pops a
+parameter off the stack and uses this as the value of the constant. The
+routine for the new constant pushes this value onto the stack.
+
+\param gp_entry: Unused entry for the "constant" word
 */
+// -----------------------------------------------------------------------------
 void EC_constant(gpointer gp_entry) {
     Token token = get_token();
     Param *param0 = pop_param();
@@ -14,6 +28,12 @@ void EC_constant(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pushes the first parameter of an entry onto the stack.
+
+\param: gp_entry: The entry with the parameter to be pushed.
+*/
+// -----------------------------------------------------------------------------
 void EC_push_param0(gpointer gp_entry) {
     Entry *entry = gp_entry;
     Param *param0 = new_param();

@@ -1,23 +1,20 @@
-/** \file
+/** \file globals.c
+
+\brief All global objects are here.
+
+This defines the main components of the Forth interpreter: _dictionary,
+_stack, and _return_stack.
+
 */
 
 // =============================================================================
 // Globals
 // =============================================================================
 
-/** Global forth dictionary
-*/
-GList *_dictionary = NULL;
-
-
-/** Global parameter stack
-*/
-GQueue *_stack = NULL;
-
-
-/** Global return stack
-*/
-GQueue *_return_stack = NULL;
+GList *_dictionary = NULL;      /**< \brief Global Forth dictionary */
+GQueue *_stack = NULL;          /**< \brief Global Param stack */
+GQueue *_return_stack = NULL;   /**< \brief Global return stack */
+jmp_buf _error_jmp_buf;         /**< \brief Global jump buffer for error handling */
 
 
 /** Global interpreter mode. The legal values are:
@@ -25,12 +22,8 @@ GQueue *_return_stack = NULL;
     - E: Execution mode (normal)
     - C: Compilation mode (during word definition)
 */
-gchar _mode = 'E';
+gchar _mode = 'E';              /**< \brief 'E'xecuting or 'C'ompiling */
 
-
-/** Global jump buffer used for long jumping to the error handler.
-*/
-jmp_buf _error_jmp_buf;
 
 
 // =============================================================================

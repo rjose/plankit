@@ -22,9 +22,9 @@ Longest word we can have in an entry.
 // =============================================================================
 // External functions
 // =============================================================================
-extern int yylex();
-extern FILE* yyin;
-extern char *yytext;
+extern int yylex();     /**< \brief Gets next token from the input stream */
+extern FILE* yyin;      /**< \brief Points to the input stream */
+extern char *yytext;    /**< \brief Current token */
 
 
 

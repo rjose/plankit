@@ -1,3 +1,6 @@
+/** \file dictionary.h
+*/
+
 #pragma once
 
 void build_dictionary();

@@ -1,9 +1,16 @@
-// =============================================================================
-/** \file
+/** \file dictionary.c
 
-This defines the functions for manipulating the global Forth dictionary: _dictionary.
+\brief Defines functions for manipulating the global Forth dictionary: _dictionary.
+
+A Dictionary is just a GList of Entry objects. Each Entry is added to the end
+of the _dictionary. Searches for an Entry start at the end and move backwards.
+This allows older entries to be overridden.
+
+The basic dictionary is built using build_dictionary. This should be functional
+as a control language. Any extensions to the dictionary should be done via
+a word that can load new entries. 
+
 */
-// =============================================================================
 
 
 // -----------------------------------------------------------------------------

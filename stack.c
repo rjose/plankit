@@ -1,13 +1,27 @@
-/** \file
+/** \file stack.c
+
+\brief Defines functions for creating, manipulating, and freeing the parameter stack.
+
+The parameter stack is used to pass arguments and results between words and entry
+routines.
 */
 
 
+// -----------------------------------------------------------------------------
+/** Creates a new stack
+*/
+// -----------------------------------------------------------------------------
 void create_stack() {
     _stack = g_queue_new();
 }
 
+
+// -----------------------------------------------------------------------------
+/** Frees memory for a stack
+*/
+// -----------------------------------------------------------------------------
 void destroy_stack() {
-    printf("TODO: Destroy stack\n");
+    g_queue_free_full(_stack, free_param);
 }
 
 

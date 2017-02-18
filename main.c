@@ -33,7 +33,11 @@ state.
 // -----------------------------------------------------------------------------
 void handle_error(gint error_type, Token token) {
     fprintf(stderr, "%s: %s\n", error_type_to_string(error_type), token.word);
-    printf("TODO: Clear stacks and IC\n\n");
+
+    // Reset stacks, _ip, and _mode
+    _ip = NULL;
+    clear_stack();
+    clear_stack_r();
 
     _mode = 'E';
 }

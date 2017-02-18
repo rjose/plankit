@@ -15,6 +15,14 @@ void create_stack() {
     _stack = g_queue_new();
 }
 
+static void _free_param(gpointer param, gpointer unused) {
+    free_param(param);
+}
+
+void clear_stack() {
+    g_queue_foreach(_stack, _free_param, NULL);
+    g_queue_clear(_stack);
+}
 
 // -----------------------------------------------------------------------------
 /** Frees memory for a stack
@@ -65,7 +73,6 @@ void push_token(Token token) {
 // -----------------------------------------------------------------------------
 /** Pushes a param onto the stack.
 
-\note The param must be dynamically allocated since we free it on stack destruction.
 */
 // -----------------------------------------------------------------------------
 void push_param(Param* param) {

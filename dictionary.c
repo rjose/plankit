@@ -59,24 +59,16 @@ that we can control the extensions dynamically.
 void build_dictionary() {
     Entry *entry;
 
-    entry = add_entry("constant");
-    entry->routine = EC_constant;
-
-    entry = add_entry("variable");
-    entry->routine = EC_variable;
-
-    entry = add_entry(".s");
-    entry->routine = EC_print_stack;
-
-    entry = add_entry(":");
-    entry->routine = EC_define;
+    add_entry("constant")->routine = EC_constant;
+    add_entry("variable")->routine = EC_variable;
+    add_entry(".s")->routine = EC_print_stack;
+    add_entry(":")->routine = EC_define;
 
     entry = add_entry(";");
     entry->immediate = 1;
     entry->routine = EC_end_define;
 
-    entry = add_entry(".d");
-    entry->routine = EC_print_definition;
+    add_entry(".d")->routine = EC_print_definition;
 }
 
 Entry *latest_entry() {

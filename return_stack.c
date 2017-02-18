@@ -16,6 +16,9 @@ void create_stack_r() {
     _return_stack = g_queue_new();
 }
 
+void clear_stack_r() {
+    g_queue_clear(_return_stack);
+}
 
 // -----------------------------------------------------------------------------
 /** Frees memory for a return stack

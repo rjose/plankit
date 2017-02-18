@@ -243,3 +243,5 @@ Feb 18, 2017
 Let's add variables next.
 
 OK, can create a variable. Let's add the associated variable words.
+
+I added the code to clear the stacks on error.

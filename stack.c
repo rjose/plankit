@@ -29,6 +29,7 @@ void clear_stack() {
 */
 // -----------------------------------------------------------------------------
 void destroy_stack() {
+    clear_stack();
     g_queue_free(_stack);
 }
 
@@ -87,5 +88,9 @@ void push_param(Param* param) {
 */
 // -----------------------------------------------------------------------------
 Param *pop_param() {
+    if (g_queue_is_empty(_stack)) {
+        return NULL;
+    }
+
     return g_queue_pop_tail(_stack);
 }

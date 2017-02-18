@@ -12,14 +12,16 @@
 
 #define ERR_UNKNOWN_WORD  1
 #define ERR_UNKNOWN_TOKEN_TYPE  2
+#define ERR_STACK_UNDERFLOW  3
 
 
 // =============================================================================
 // External functions
 // =============================================================================
-extern int yylex();     /**< \brief Gets next token from the input stream */
-extern FILE* yyin;      /**< \brief Points to the input stream */
-extern char *yytext;    /**< \brief Current token */
+extern int yylex();          /**< \brief Gets next token from the input stream */
+extern int yylex_destroy();  /**< \brief Gets next token from the input stream */
+extern FILE* yyin;           /**< \brief Points to the input stream */
+extern char *yytext;         /**< \brief Current token */
 
 
 

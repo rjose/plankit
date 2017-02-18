@@ -69,6 +69,8 @@ void build_dictionary() {
     entry->routine = EC_end_define;
 
     add_entry(".d")->routine = EC_print_definition;
+    add_entry("!")->routine = EC_store_variable_value;
+    add_entry("@")->routine = EC_fetch_variable_value;
 }
 
 Entry *latest_entry() {

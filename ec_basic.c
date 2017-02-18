@@ -46,6 +46,62 @@ void EC_variable(gpointer gp_entry) {
 
     Entry *entry_new = add_entry(token.word);
     entry_new->routine = EC_push_entry_address;
+
+    // Adds an empty param to the variable entry for storing values
+    Param *value = new_param();
+    add_entry_param(entry_new, value);
+}
+
+
+// -----------------------------------------------------------------------------
+/** Pops a variable entry address and a parameter value and stores in variable entry.
+
+\param: gp_entry: unused
+*/
+// -----------------------------------------------------------------------------
+void EC_store_variable_value(gpointer gp_entry) {
+    Param *p_var = pop_param();    // Variable to store value in
+    if (!p_var) {
+        longjmp(_error_jmp_buf, ERR_STACK_UNDERFLOW);
+    }
+
+    Param *p_value = pop_param();  // Value to store
+    if (!p_var) {
+        longjmp(_error_jmp_buf, ERR_STACK_UNDERFLOW);
+    }
+
+
+    // Store value in variable
+    Entry *entry_var = p_var->val_entry;
+    GSequenceIter *iter = g_sequence_get_iter_at_pos(entry_var->params, 0);
+    Param *var_value = g_sequence_get(iter);
+    copy_param(var_value, p_value);
+
+    // Cleanup
+    free_param(p_value);
+    free_param(p_var);
+}
+
+
+// -----------------------------------------------------------------------------
+/** Pops a variable and pushes its value onto the stack
+
+\param: gp_entry: unused
+*/
+// -----------------------------------------------------------------------------
+void EC_fetch_variable_value(gpointer gp_entry) {
+    Param *p_var = pop_param();
+
+    Entry *entry_var = p_var->val_entry;
+    GSequenceIter *iter = g_sequence_get_iter_at_pos(entry_var->params, 0);
+    Param *var_value = g_sequence_get(iter);
+
+    Param *param_new = new_param();
+    copy_param(param_new, var_value);
+    push_param(param_new);
+
+    // Cleanup
+    free_param(p_var);
 }
 
 
@@ -59,7 +115,10 @@ void EC_push_param0(gpointer gp_entry) {
     Entry *entry = gp_entry;
     GSequenceIter *begin = g_sequence_get_begin_iter(entry->params);
     Param *param0 = g_sequence_get(begin);
-    push_param(param0);
+
+    Param *param_new = new_param();
+    copy_param(param_new, param0);
+    push_param(param_new);
 }
 
 

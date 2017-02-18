@@ -245,3 +245,11 @@ Let's add variables next.
 OK, can create a variable. Let's add the associated variable words.
 
 I added the code to clear the stacks on error.
+
+
+>> Sat Feb 18 09:33:27 PST 2017
+OK, let's add words to store and fetch variables.
+
+
+>> Sat Feb 18 10:51:07 PST 2017
+Let's handle underflow in the parameter stack.

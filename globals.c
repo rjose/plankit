@@ -36,6 +36,7 @@ GSequenceIter *_ip = NULL;      /**< \brief Next instruction (Param) to execute 
 static gchar unknown_word[] = "Unknown word";
 static gchar unknown_error[] = "Unknown error";
 static gchar unknown_token_type[] = "Unknown token type";
+static gchar stack_underflow[] = "Stack underflow";
 
 
 // -----------------------------------------------------------------------------
@@ -55,6 +56,10 @@ const gchar *error_type_to_string(gint error_type) {
 
         case ERR_UNKNOWN_TOKEN_TYPE:
             result = unknown_token_type;
+            break;
+
+        case ERR_STACK_UNDERFLOW:
+            result = stack_underflow;
             break;
 
         default:

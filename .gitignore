@@ -9,3 +9,4 @@ lex.*
 main
 html/*
 latex/*
+*.core

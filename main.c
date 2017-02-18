@@ -89,4 +89,5 @@ int main() {
     destroy_dictionary();
     destroy_stack();
     destroy_stack_r();
+    yylex_destroy();
 }

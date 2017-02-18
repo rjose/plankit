@@ -104,6 +104,13 @@ Param *new_pseudo_entry_param(const gchar *word, routine_ptr routine) {
 }
 
 
+void copy_param(Param *dst, Param *src) {
+    *dst = *src;
+
+    // Make a copy of the string since the dst needs to own it
+    dst->val_str = g_strdup(src->val_str);
+}
+
 
 // -----------------------------------------------------------------------------
 /** \brief Prints a parameter

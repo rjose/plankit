@@ -37,6 +37,7 @@ static gchar unknown_word[] = "Unknown word";
 static gchar unknown_error[] = "Unknown error";
 static gchar unknown_token_type[] = "Unknown token type";
 static gchar stack_underflow[] = "Stack underflow";
+static gchar invalid_param[] = "Invalid parameter";
 
 
 // -----------------------------------------------------------------------------
@@ -62,6 +63,10 @@ const gchar *error_type_to_string(gint error_type) {
             result = stack_underflow;
             break;
 
+        case ERR_INVALID_PARAM:
+            result = invalid_param;
+            break;
+
         default:
             result = unknown_error;
             break;
@@ -83,4 +88,16 @@ Token get_token() {
     result.type = yylex();
     g_strlcpy(result.word, yytext, MAX_WORD_LEN);
     return result;
+}
+
+
+void handle_error(gint error_type) {
+    fprintf(stderr, "%s\n", error_type_to_string(error_type));
+
+    // Reset stacks, _ip, and _mode
+    _ip = NULL;
+    clear_stack();
+    clear_stack_r();
+
+    _mode = 'E';
 }

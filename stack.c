@@ -43,8 +43,9 @@ void destroy_stack() {
 void push_token(Token token) {
     // Can't push a Word token
     if (token.type == 'W') {
-        longjmp(_error_jmp_buf, ERR_UNKNOWN_WORD);
-        return;  // Not really needed...
+        handle_error(ERR_UNKNOWN_WORD);
+        fprintf(stderr, "----> %s\n", token.word);
+        return;
     }
 
     Param *param_new;
@@ -65,8 +66,8 @@ void push_token(Token token) {
             break;
 
         default:
-            longjmp(_error_jmp_buf, ERR_UNKNOWN_TOKEN_TYPE);
-            break;
+            handle_error(ERR_UNKNOWN_TOKEN_TYPE);
+            return;
     }
 }
 

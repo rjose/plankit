@@ -253,3 +253,9 @@ OK, let's add words to store and fetch variables.
 
 >> Sat Feb 18 10:51:07 PST 2017
 Let's handle underflow in the parameter stack.
+
+
+>> Sat Feb 18 11:15:42 PST 2017
+Let's change how we do our error handling. I'll try having
+an error handler that clears stacks etc, but I won't do
+a long jump to it.

@@ -13,6 +13,7 @@
 #define ERR_UNKNOWN_WORD  1
 #define ERR_UNKNOWN_TOKEN_TYPE  2
 #define ERR_STACK_UNDERFLOW  3
+#define ERR_INVALID_PARAM  4
 
 
 // =============================================================================
@@ -61,3 +62,4 @@ extern GSequenceIter *_ip;
 
 const gchar *error_type_to_string(gint error_type);
 Token get_token();
+void handle_error(gint error_type);

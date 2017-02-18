@@ -32,7 +32,8 @@ void compile(Token token) {
         case 'W':
             entry = find_entry(token.word);
             if (!entry) {
-                longjmp(_error_jmp_buf, ERR_UNKNOWN_WORD);
+                handle_error(ERR_UNKNOWN_WORD);
+                return;
             }
             else if(entry->immediate) {
                 execute(entry);

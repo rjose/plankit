@@ -62,12 +62,21 @@ void EC_variable(gpointer gp_entry) {
 void EC_store_variable_value(gpointer gp_entry) {
     Param *p_var = pop_param();    // Variable to store value in
     if (!p_var) {
-        longjmp(_error_jmp_buf, ERR_STACK_UNDERFLOW);
+        handle_error(ERR_STACK_UNDERFLOW);
+        return;
     }
 
     Param *p_value = pop_param();  // Value to store
-    if (!p_var) {
-        longjmp(_error_jmp_buf, ERR_STACK_UNDERFLOW);
+    if (!p_value) {
+        handle_error(ERR_STACK_UNDERFLOW);
+        return;
+    }
+
+    if (p_var->type != 'E') {
+        handle_error(ERR_INVALID_PARAM);
+        // TODO: Pass in a prefix and a filestream
+        print_param(p_var);
+        return;
     }
 
 
@@ -205,7 +214,7 @@ void EC_print_definition(gpointer gp_entry) {
     Token token = get_token();
     Entry *entry = find_entry(token.word);
     if (!entry) {
-        longjmp(_error_jmp_buf, ERR_UNKNOWN_WORD);
+        handle_error(ERR_UNKNOWN_WORD);
         return;
     }
 
@@ -243,8 +252,8 @@ void EC_execute(gpointer gp_entry) {
                 break;
 
             default:
-                longjmp(_error_jmp_buf, ERR_UNKNOWN_WORD);
-                break;
+                handle_error(ERR_UNKNOWN_WORD);
+                return;
         }
     }
 }

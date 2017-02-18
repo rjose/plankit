@@ -10,7 +10,7 @@ See \ref param_types "Param types" for a description of each type of parameter.
 
 
 // -----------------------------------------------------------------------------
-/** \brief Creates a new Param.
+/** Creates a new Param.
 
 \returns newly allocated Param
 */
@@ -23,7 +23,7 @@ Param *new_param() {
 
 
 // -----------------------------------------------------------------------------
-/** \brief Creates a new int-valued Param.
+/** Creates a new int-valued Param.
 
 \param val_int: Value of the Param being created
 \returns newly allocated Param with the specified int value
@@ -38,7 +38,7 @@ Param *new_int_param(gint64 val_int) {
 
 
 // -----------------------------------------------------------------------------
-/** \brief Creates a new double-valued Param.
+/** Creates a new double-valued Param.
 
 \param val_double: Value of the Param being created
 \returns newly allocated Param with the specified double value
@@ -53,7 +53,7 @@ Param *new_double_param(gdouble val_double) {
 
 
 // -----------------------------------------------------------------------------
-/** \brief Creates a new routine-valued Param.
+/** Creates a new routine-valued Param.
 
 \param val_routine: Value of the Param being created
 \returns newly allocated Param with the specified routine value
@@ -68,7 +68,7 @@ Param *new_routine_param(routine_ptr val_routine) {
 
 
 // -----------------------------------------------------------------------------
-/** \brief Creates a new entry-valued Param.
+/** Creates a new entry-valued Param.
 
 \param val_routine: Value of the Param being created
 \returns newly allocated Param with the specified entry value
@@ -85,7 +85,7 @@ Param *new_entry_param(Entry *val_entry) {
 
 
 // -----------------------------------------------------------------------------
-/** \brief Creates a new pseudoentry-valued Param.
+/** Creates a new pseudoentry-valued Param.
 
 \param val_routine: Value of the Param being created
 \returns newly allocated Param with the specified pseudoentry value
@@ -104,6 +104,13 @@ Param *new_pseudo_entry_param(const gchar *word, routine_ptr routine) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Copies fields of Param to another Param
+
+\note The string value is duplicated so that the destination Param can be freed
+      independently of the source Param.
+*/
+// -----------------------------------------------------------------------------
 void copy_param(Param *dst, Param *src) {
     *dst = *src;
 
@@ -113,9 +120,11 @@ void copy_param(Param *dst, Param *src) {
 
 
 // -----------------------------------------------------------------------------
-/** \brief Prints a parameter
+/** Prints a parameter to a file and with a prefix
 
 \param param: Param to print
+\param file: Output file
+\param prefi: Prefix used when outputting string
 
 */
 // -----------------------------------------------------------------------------
@@ -152,7 +161,7 @@ void print_param(Param *param, FILE *file, const gchar *prefix) {
 
 
 // -----------------------------------------------------------------------------
-/** \brief Frees memory for a param.
+/** Frees memory for a param.
 
 \param gp_param: Pointer to a Param to free.
 */

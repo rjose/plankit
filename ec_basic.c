@@ -196,10 +196,20 @@ void EC_define(gpointer gp_entry) {
     _mode = 'C';
 }
 
+
+// -----------------------------------------------------------------------------
+/** Pops return stack and stores in _ip.
+*/
+// -----------------------------------------------------------------------------
 void EC_pop_return_stack(gpointer gp_entry) {
     _ip = pop_param_r();
 }
 
+
+// -----------------------------------------------------------------------------
+/** Marks the end of the definition and returns interpreter to 'E'xecute mode.
+*/
+// -----------------------------------------------------------------------------
 void EC_end_define(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
     Param *pseudo_param = new_pseudo_entry_param(";", EC_pop_return_stack);
@@ -209,6 +219,10 @@ void EC_end_define(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Prints the words in an Entry definition.
+*/
+// -----------------------------------------------------------------------------
 void EC_print_definition(gpointer gp_entry) {
     Token token = get_token();
     Entry *entry = find_entry(token.word);
@@ -227,6 +241,18 @@ void EC_print_definition(gpointer gp_entry) {
     }
 }
 
+
+// -----------------------------------------------------------------------------
+/** Executes a definition
+
+This starts by pushing the current _ip onto the return stack and then setting
+the _ip to the first parameter of the entry's definition (stored in its params
+field). From there, each parameter of the definition is executed sequentially. If
+one of these parameters is a Dictionary entry, it will be executed by this same
+function, which will result in the return stack noting the place to return
+once that execution is complete.
+*/
+// -----------------------------------------------------------------------------
 void EC_execute(gpointer gp_entry) {
     Entry *entry = gp_entry;
     Param *cur_param;

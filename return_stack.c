@@ -16,6 +16,13 @@ void create_stack_r() {
     _return_stack = g_queue_new();
 }
 
+// -----------------------------------------------------------------------------
+/** Clears all items from the return stack.
+
+This is typically used during error handling to return the interpreter to a
+good initial state.
+*/
+// -----------------------------------------------------------------------------
 void clear_stack_r() {
     g_queue_clear(_return_stack);
 }

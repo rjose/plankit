@@ -22,6 +22,10 @@ void execute(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Compiles a token into the latest Entry's definition.
+*/
+// -----------------------------------------------------------------------------
 void compile(Token token) {
     Entry *entry;
     Entry *entry_latest = latest_entry();

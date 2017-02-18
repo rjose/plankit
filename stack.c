@@ -4,6 +4,10 @@
 
 The parameter stack is used to pass arguments and results between words and entry
 routines.
+
+The Param objects on the stack are dynamically allocated. Clients who pop items
+off the stack are responsible for freeing them. Any items left on the stack are
+automatically freed when the stack is cleared or destroyed.
 */
 
 
@@ -15,10 +19,20 @@ void create_stack() {
     _stack = g_queue_new();
 }
 
+
+// -----------------------------------------------------------------------------
+/** Helper function used to free a parameter
+*/
+// -----------------------------------------------------------------------------
 static void _free_param(gpointer param, gpointer unused) {
     free_param(param);
 }
 
+
+// -----------------------------------------------------------------------------
+/** Clears stack, freeing all Param objects on the stack
+*/
+// -----------------------------------------------------------------------------
 void clear_stack() {
     g_queue_foreach(_stack, _free_param, NULL);
     g_queue_clear(_stack);
@@ -26,50 +40,13 @@ void clear_stack() {
 
 // -----------------------------------------------------------------------------
 /** Frees memory for a stack
+
+The stack is cleared and all Param objects on the stack are freed as well.
 */
 // -----------------------------------------------------------------------------
 void destroy_stack() {
     clear_stack();
     g_queue_free(_stack);
-}
-
-
-// -----------------------------------------------------------------------------
-/** Converts a non-Word token into a Param and pushes it onto the param stack.
-
-\param token: Token to convert and push
-*/
-// -----------------------------------------------------------------------------
-void push_token(Token token) {
-    // Can't push a Word token
-    if (token.type == 'W') {
-        handle_error(ERR_UNKNOWN_WORD);
-        fprintf(stderr, "----> %s\n", token.word);
-        return;
-    }
-
-    Param *param_new;
-    gint64 val_int;
-    gdouble val_double;
-
-    switch(token.type) {
-        case 'I':
-            val_int = g_ascii_strtoll(token.word, NULL, 10);
-            param_new = new_int_param(val_int);
-            push_param(param_new);
-            break;
-
-        case 'D':
-            val_double = g_ascii_strtod(token.word, NULL);
-            param_new = new_double_param(val_double);
-            push_param(param_new);
-            break;
-
-        default:
-            handle_error(ERR_UNKNOWN_TOKEN_TYPE);
-            fprintf(stderr, "----> %s\n", token.word);
-            return;
-    }
 }
 
 

@@ -91,6 +91,11 @@ Token get_token() {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Prints out the error type and resets the state of the interpreter.
+
+*/
+// -----------------------------------------------------------------------------
 void handle_error(gint error_type) {
     fprintf(stderr, "%s\n", error_type_to_string(error_type));
 

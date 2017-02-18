@@ -19,6 +19,52 @@ basically gets a token from the input stream and executes it.
 
 
 // -----------------------------------------------------------------------------
+/** \brief A convenience method to push tokens directly onto the param stack.
+
+This is used during the parsing of the input stream. Only literals such as
+integers, doubles, and strings will be converted and pushed onto the stack.
+
+Any words that were dictionary entries would already have been handled.
+
+\param token: Token to convert and push
+*/
+// -----------------------------------------------------------------------------
+static void push_token(Token token) {
+    // Can't push a Word token
+    if (token.type == 'W') {
+        handle_error(ERR_UNKNOWN_WORD);
+        fprintf(stderr, "----> %s\n", token.word);
+        return;
+    }
+
+    Param *param_new;
+    gint64 val_int;
+    gdouble val_double;
+
+    switch(token.type) {
+        case 'I':
+            val_int = g_ascii_strtoll(token.word, NULL, 10);
+            param_new = new_int_param(val_int);
+            push_param(param_new);
+            break;
+
+        case 'D':
+            val_double = g_ascii_strtod(token.word, NULL);
+            param_new = new_double_param(val_double);
+            push_param(param_new);
+            break;
+
+        default:
+            handle_error(ERR_UNKNOWN_TOKEN_TYPE);
+            fprintf(stderr, "----> %s\n", token.word);
+            return;
+    }
+}
+
+
+
+
+// -----------------------------------------------------------------------------
 /** Sets up the interpreter and then runs the main control loop.
 */
 // -----------------------------------------------------------------------------

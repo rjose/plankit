@@ -62,6 +62,9 @@ void build_dictionary() {
     entry = add_entry("constant");
     entry->routine = EC_constant;
 
+    entry = add_entry("variable");
+    entry->routine = EC_variable;
+
     entry = add_entry(".s");
     entry->routine = EC_print_stack;
 

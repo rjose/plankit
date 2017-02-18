@@ -31,6 +31,25 @@ void EC_constant(gpointer gp_entry) {
 
 
 // -----------------------------------------------------------------------------
+/** Creates a new variable entry.
+
+This reads the next token and uses this as the word for the entry.
+The routine for the new constant pushes the address of the variable's
+entry onto the stack.
+
+\param gp_entry: Unused
+
+*/
+// -----------------------------------------------------------------------------
+void EC_variable(gpointer gp_entry) {
+    Token token = get_token();
+
+    Entry *entry_new = add_entry(token.word);
+    entry_new->routine = EC_push_entry_address;
+}
+
+
+// -----------------------------------------------------------------------------
 /** Pushes the first parameter of an entry onto the stack.
 
 \param: gp_entry: The entry with the parameter to be pushed.
@@ -41,6 +60,19 @@ void EC_push_param0(gpointer gp_entry) {
     GSequenceIter *begin = g_sequence_get_begin_iter(entry->params);
     Param *param0 = g_sequence_get(begin);
     push_param(param0);
+}
+
+
+// -----------------------------------------------------------------------------
+/** Pushes address of entry onto the stack
+
+\param: gp_entry: The entry with the parameter to be pushed.
+*/
+// -----------------------------------------------------------------------------
+void EC_push_entry_address(gpointer gp_entry) {
+    Entry *entry = gp_entry;
+    Param *param = new_entry_param(entry);
+    push_param(param);
 }
 
 

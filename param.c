@@ -98,7 +98,7 @@ constants from a definition onto the param stack.
 Param *new_pseudo_entry_param(const gchar *word, routine_ptr routine) {
     Param *result = new_param();
     result->type = 'P';
-    g_strlcpy(result->val_pseudo_entry.word, word, MAX_WORD_LEN);   
+    g_strlcpy(result->val_pseudo_entry.word, word, MAX_WORD_LEN);
     result->val_pseudo_entry.routine = routine;
     return result;
 }

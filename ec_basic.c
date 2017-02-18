@@ -77,7 +77,7 @@ compiled differently:
 
 - Literals:           A "P" parameter is created with its first parameter
                       being the literal. The routine of the "P" parameter
-                      pushes the first param onto the stack. 
+                      pushes the first param onto the stack.
 
 - Immediate words:    These are words like ';' that are executed during a
                       compilation. Macros are an example of an immediate

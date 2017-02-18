@@ -8,7 +8,7 @@ This allows older entries to be overridden.
 
 The basic dictionary is built using build_dictionary. This should be functional
 as a control language. Any extensions to the dictionary should be done via
-a word that can load new entries. 
+a word that can load new entries.
 
 */
 
@@ -33,7 +33,7 @@ Entry* find_entry(const gchar* word) {
 // -----------------------------------------------------------------------------
 /** Allocates new Entry, adds it to the dictionary, and returns it.
 
-\param word: The word to use for the new entry 
+\param word: The word to use for the new entry
 \returns The newly created entry
 */
 // -----------------------------------------------------------------------------

@@ -30,7 +30,7 @@ void compile(Token token) {
     // TODO: Handle all cases
     switch(token.type) {
         case 'W':
-            entry = find_entry(token.word); 
+            entry = find_entry(token.word);
             if (!entry) {
                 longjmp(_error_jmp_buf, ERR_UNKNOWN_WORD);
             }

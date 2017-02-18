@@ -21,7 +21,7 @@ void create_stack() {
 */
 // -----------------------------------------------------------------------------
 void destroy_stack() {
-    g_queue_free_full(_stack, free_param);
+    g_queue_free(_stack);
 }
 
 

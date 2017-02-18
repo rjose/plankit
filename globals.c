@@ -24,6 +24,8 @@ jmp_buf _error_jmp_buf;         /**< \brief Global jump buffer for error handlin
 */
 gchar _mode = 'E';              /**< \brief 'E'xecuting or 'C'ompiling */
 
+GSequenceIter *_ip = NULL;      /**< \brief Next instruction (Param) to execute in a definition */
+
 
 
 // =============================================================================

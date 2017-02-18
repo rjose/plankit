@@ -1,4 +1,4 @@
-/** \file
+/** \file globals.h
 */
 
 #pragma once
@@ -6,11 +6,6 @@
 // =============================================================================
 // Defines
 // =============================================================================
-/**
-Longest word we can have in an entry.
-*/
-#define MAX_WORD_LEN  128
-
 // -----------------------------------------------------------------------------
 // Error codes
 // -----------------------------------------------------------------------------
@@ -60,6 +55,7 @@ extern GQueue *_stack;
 extern GQueue *_return_stack;
 extern gchar _mode;
 extern jmp_buf _error_jmp_buf;
+extern GSequenceIter *_ip;
 
 const gchar *error_type_to_string(gint error_type);
 Token get_token();

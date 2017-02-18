@@ -142,3 +142,93 @@ add the printing of the stack.
 
 >> Mon Feb 13 20:56:52 PST 2017
 Let's add a word to print the stack. We'll call it .p
+
+
+<< (22 min) Mon Feb 13 21:18:39 PST 2017
+Got this working. Tomorrow, we'll add a definition. There'll be more steps
+in that.
+
+
+Feb 14, 2017
+------------
+
+
+>> Tue Feb 14 17:44:00 PST 2017
+Let's create a simple definition. It will just have words that are already
+entries.
+
+
+- [X] Add routine to Param
+- [X] Add execute routine to define_entry->params
+- [X] Add an immediate flag
+- [X] Add compiling of a simple entry
+- [X] Define ';' 
+- [X] Add compile code
+- [ ] Define EC_execute
+
+
+Feb 15, 2017
+------------
+
+>> Wed Feb 15 18:33:53 PST 2017
+Let's add a word to print a definition.
+
+
+>> Wed Feb 15 22:04:17 PST 2017
+The return stack should be pointers to parameters
+
+
+Feb 16, 2017
+------------
+Let's get execution working and then clean up print_param.
+
+The return stack should consist of pointers to params. It should only be used
+for that purpose.
+
+We should use a GSequence for the parameters in an entry since it allows us
+to specify offsets from them.
+
+Let's stash save our current changes and then make this change.
+
+
+>> Thu Feb 16 20:28:31 PST 2017
+Let's get everything running again and then finish the execute function.
+
+
+<< (18 min) Thu Feb 16 20:46:55 PST 2017
+OK, got it running again. Let's take a break and then finish the EC_execute
+function.
+
+
+>> Thu Feb 16 22:06:20 PST 2017
+OK, got compile to work, but I'm double freeing something. I'll check tomorrow.
+
+
+Feb 17, 2017
+------------
+Let's scrub through our documentation of stacks to make sure our memory
+management is OK.
+
+allheads.h
+globals.h
+globals.c
+
+param.h
+param.c
+
+entry.h
+entry.c
+
+stack.h
+return_stack.h
+return_stack.c
+stack.c
+
+dictionary.h
+dictionary.c
+
+ec_basic.h
+ec_basic.c
+
+
+main.c

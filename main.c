@@ -50,6 +50,7 @@ int main() {
 
     build_dictionary();
     create_stack();
+    create_stack_r();
 
     // Control loop
     while(1) {
@@ -70,7 +71,7 @@ int main() {
 
         // ...otherwise, we're compiling
         else {
-            printf("TODO: Compile word: %s\n", token.word);
+            compile(token);
         }
 
         error_type = setjmp(_error_jmp_buf);
@@ -83,4 +84,5 @@ int main() {
     // Clean up
     destroy_dictionary();
     destroy_stack();
+    destroy_stack_r();
 }

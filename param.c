@@ -119,33 +119,33 @@ void copy_param(Param *dst, Param *src) {
 
 */
 // -----------------------------------------------------------------------------
-void print_param(Param *param) {
+void print_param(Param *param, FILE *file, const gchar *prefix) {
     Entry *entry;
 
     switch (param->type) {
         case 'I':
-            printf("I: %ld\n", param->val_int);
+            fprintf(file, "%sI: %ld\n", prefix, param->val_int);
             break;
 
         case 'D':
-            printf("D: %lf\n", param->val_double);
+            fprintf(file, "%sD: %lf\n", prefix, param->val_double);
             break;
 
         case 'S':
-            printf("S: %s\n", param->val_str);
+            fprintf(file, "%sS: %s\n", prefix, param->val_str);
             break;
 
         case 'E':
             entry = param->val_entry;
-            printf("E: %s\n", entry->word);
+            fprintf(file, "%sE: %s\n", prefix, entry->word);
             break;
 
         case 'R':
-            printf("R: %ld\n", (gint64) param->val_routine);
+            fprintf(file, "%sR: %ld\n", prefix, (gint64) param->val_routine);
             break;
 
         case 'P':
-            printf("P: %s\n", param->val_pseudo_entry.word);
+            fprintf(file, "%sP: %s\n", prefix, param->val_pseudo_entry.word);
             break;
     }
 }

@@ -74,8 +74,7 @@ void EC_store_variable_value(gpointer gp_entry) {
 
     if (p_var->type != 'E') {
         handle_error(ERR_INVALID_PARAM);
-        // TODO: Pass in a prefix and a filestream
-        print_param(p_var);
+        print_param(p_var, stderr, "----> ");
         return;
     }
 
@@ -146,7 +145,7 @@ void EC_push_entry_address(gpointer gp_entry) {
 
 static void gfunc_print_param(gpointer gp_param, gpointer user_data) {
     Param *param = gp_param;
-    print_param(param);
+    print_param(param, stdout, "");
 }
 
 
@@ -215,16 +214,16 @@ void EC_print_definition(gpointer gp_entry) {
     Entry *entry = find_entry(token.word);
     if (!entry) {
         handle_error(ERR_UNKNOWN_WORD);
+        fprintf(stderr, "-----> %s\n", token.word);
         return;
     }
 
-    printf("Entry: %s\n", entry->word);
     for (GSequenceIter *iter = g_sequence_get_begin_iter(entry->params);
          !g_sequence_iter_is_end(iter);
          iter = g_sequence_iter_next(iter)) {
 
         Param *p = g_sequence_get(iter);
-        print_param(p);
+        print_param(p, stdout, "");
     }
 }
 
@@ -253,6 +252,7 @@ void EC_execute(gpointer gp_entry) {
 
             default:
                 handle_error(ERR_UNKNOWN_WORD);
+                print_param(cur_param, stderr, "----->");
                 return;
         }
     }

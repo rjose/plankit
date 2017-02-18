@@ -67,6 +67,7 @@ void push_token(Token token) {
 
         default:
             handle_error(ERR_UNKNOWN_TOKEN_TYPE);
+            fprintf(stderr, "----> %s\n", token.word);
             return;
     }
 }

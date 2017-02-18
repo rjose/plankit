@@ -259,3 +259,7 @@ Let's handle underflow in the parameter stack.
 Let's change how we do our error handling. I'll try having
 an error handler that clears stacks etc, but I won't do
 a long jump to it.
+
+
+>> Sat Feb 18 11:39:54 PST 2017
+Let's revise our print_param so it can take a prefix and a FILE pointer.

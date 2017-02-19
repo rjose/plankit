@@ -1,10 +1,10 @@
 /** \file allheads.h
 
 \brief Includes all headers required by the C files in this project. This also
-defines some of the key structs.
+defines the key structs used throughout.
 
 This is automatically included by the Makefile during the compiler invocation
-for all files so that we don't have to include any headers in any file.
+for all files so that.
 */
 
 #pragma once

@@ -85,6 +85,14 @@ void build_dictionary() {
     entry->routine = EC_else;
 }
 
+
+// -----------------------------------------------------------------------------
+/** Returns the most recently added entry in the dictionary.
+
+During compilation of a definition, that definition will be the
+latest entry.
+*/
+// -----------------------------------------------------------------------------
 Entry *latest_entry() {
     Entry *result = g_list_last(_dictionary)->data;
     return result;

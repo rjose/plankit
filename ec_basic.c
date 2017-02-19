@@ -56,7 +56,7 @@ void EC_variable(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 /** Pops a variable entry address and a parameter value and stores in variable entry.
 
-\param: gp_entry: unused
+\param gp_entry: unused
 */
 // -----------------------------------------------------------------------------
 void EC_store_variable_value(gpointer gp_entry) {
@@ -94,7 +94,7 @@ void EC_store_variable_value(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 /** Pops a variable and pushes its value onto the stack
 
-\param: gp_entry: unused
+\param gp_entry: unused
 */
 // -----------------------------------------------------------------------------
 void EC_fetch_variable_value(gpointer gp_entry) {
@@ -116,7 +116,7 @@ void EC_fetch_variable_value(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 /** Pushes the first parameter of an entry onto the stack.
 
-\param: gp_entry: The entry with the parameter to be pushed.
+\param gp_entry: The entry with the parameter to be pushed.
 */
 // -----------------------------------------------------------------------------
 void EC_push_param0(gpointer gp_entry) {
@@ -133,7 +133,7 @@ void EC_push_param0(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 /** Pushes address of entry onto the stack
 
-\param: gp_entry: The entry with the parameter to be pushed.
+\param gp_entry: The entry with the parameter to be pushed.
 */
 // -----------------------------------------------------------------------------
 void EC_push_entry_address(gpointer gp_entry) {
@@ -218,6 +218,18 @@ void EC_end_define(gpointer gp_entry) {
     _mode = 'E';
 }
 
+// -----------------------------------------------------------------------------
+/** Implements branching by compiling a conditional jump into a definition.
+
+The behavior of the compiled code is to pop a parameter from the stack and
+if it is false, jump to the end of the "if" block. Otherwise, continue through
+the subsequent statements.
+
+We compile this by adding a conditional jump "pseudo entry". Because we don't
+know, at this time of the compilation, where to jump to, we push the pseudo entry
+onto the stack to be filled out later by an "else" or a "then" word.
+*/
+// -----------------------------------------------------------------------------
 void EC_if(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
     Param *pseudo_param = new_pseudo_entry_param("jmp-if-false", EC_jmp_if_false);
@@ -229,6 +241,19 @@ void EC_if(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Implements the "else" block of a conditional part of a definition.
+
+The "else" should correspond to an earlier "if". At this point, we know where
+the "if" should jump to if the condition is false. We store this in the
+"pseudo entry" of the earlier "if" by popping it off the stack and setting
+its first parameter to the offset into the definition's instruction sequence.
+
+The "else" word marks the end of the "if" section and so an uncondtional
+jmp must be added to the definition first. Similar to the "if" jmp, we
+will need to fill out the jmp target later, so we push it onto the stack.
+*/
+// -----------------------------------------------------------------------------
 void EC_else(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
 
@@ -250,6 +275,12 @@ void EC_else(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Implements the end of a conditional section of code.
+
+This pops a "pseudo entry" and sets its jmp target to be the next instruction.
+*/
+// -----------------------------------------------------------------------------
 void EC_then(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
 
@@ -263,6 +294,14 @@ void EC_then(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Implements a conditional jmp by updating the instruction pointer.
+
+This pops a param off the stack. If its val_int is 0, then it does a jmp to
+the instruction at the offset specified in its first param.
+
+*/
+// -----------------------------------------------------------------------------
 void EC_jmp_if_false(gpointer gp_entry) {
     Entry *entry = gp_entry;
 
@@ -282,6 +321,13 @@ void EC_jmp_if_false(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Implements an unconditional jmp by updating the instruction pointer.
+
+This sets the instruction pointer to the offset specified in the entry's
+first param.
+*/
+// -----------------------------------------------------------------------------
 void EC_jmp(gpointer gp_entry) {
     Entry *entry = gp_entry;
 

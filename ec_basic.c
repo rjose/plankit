@@ -150,7 +150,7 @@ static void gfunc_print_param(gpointer gp_param, gpointer user_data) {
 
 
 // -----------------------------------------------------------------------------
-/** Prints stack nondestructively. Top of stack is at the right.
+/** Prints stack nondestructively. Top of stack is at the top.
 
 */
 // -----------------------------------------------------------------------------
@@ -216,6 +216,82 @@ void EC_end_define(gpointer gp_entry) {
     add_entry_param(entry_latest, pseudo_param);
 
     _mode = 'E';
+}
+
+void EC_if(gpointer gp_entry) {
+    Entry *entry_latest = latest_entry();
+    Param *pseudo_param = new_pseudo_entry_param("jmp-if-false", EC_jmp_if_false);
+    add_entry_param(entry_latest, pseudo_param);
+
+    // Push pseudo_param Entry onto stack so we can fill it out later
+    Param *param_pseudo_entry = new_entry_param(&pseudo_param->val_pseudo_entry);
+    push_param(param_pseudo_entry);
+}
+
+
+void EC_else(gpointer gp_entry) {
+    Entry *entry_latest = latest_entry();
+
+    // Pop param so we can fill out the target for the jmp
+    Param *param_jmp_entry = pop_param();
+    Entry *entry_jmp = param_jmp_entry->val_entry;
+    Param *param_jmp_target = new_int_param(g_sequence_get_length(entry_latest->params) + 1);
+    add_entry_param(entry_jmp, param_jmp_target);
+
+    // Add the jmp param
+    Param *pseudo_param = new_pseudo_entry_param("jmp", EC_jmp);
+    add_entry_param(entry_latest, pseudo_param);
+
+    // Push pseudo_param Entry onto stack so we can fill it out later
+    Param *param_pseudo_entry = new_entry_param(&pseudo_param->val_pseudo_entry);
+    push_param(param_pseudo_entry);
+
+    free_param(param_jmp_entry);
+}
+
+
+void EC_then(gpointer gp_entry) {
+    Entry *entry_latest = latest_entry();
+
+    // Pop param so we can fill out the target for the jmp
+    Param *param_jmp_entry = pop_param();
+    Entry *entry_jmp = param_jmp_entry->val_entry;
+    Param *param_jmp_target = new_int_param(g_sequence_get_length(entry_latest->params));
+    add_entry_param(entry_jmp, param_jmp_target);
+
+    free_param(param_jmp_entry);
+}
+
+
+void EC_jmp_if_false(gpointer gp_entry) {
+    Entry *entry = gp_entry;
+
+    Param *param_bool = pop_param();
+    // If false, move the instruction pointer according to the entry's first param
+    if (param_bool->val_int == 0) {
+        // Get first param of entry
+        GSequenceIter *iter = g_sequence_get_iter_at_pos(entry->params, 0);
+        Param *param0 = g_sequence_get(iter);
+
+        // Update the instruction pointer
+        GSequence *instructions = g_sequence_iter_get_sequence(_ip);
+        _ip = g_sequence_get_iter_at_pos(instructions, param0->val_int);
+    }
+
+    free_param(param_bool);
+}
+
+
+void EC_jmp(gpointer gp_entry) {
+    Entry *entry = gp_entry;
+
+    // Get first param of entry
+    GSequenceIter *iter = g_sequence_get_iter_at_pos(entry->params, 0);
+    Param *param0 = g_sequence_get(iter);
+
+    // Update the instruction pointer
+    GSequence *instructions = g_sequence_iter_get_sequence(_ip);
+    _ip = g_sequence_get_iter_at_pos(instructions, param0->val_int);
 }
 
 

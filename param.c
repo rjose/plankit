@@ -100,6 +100,7 @@ Param *new_pseudo_entry_param(const gchar *word, routine_ptr routine) {
     result->type = 'P';
     g_strlcpy(result->val_pseudo_entry.word, word, MAX_WORD_LEN);
     result->val_pseudo_entry.routine = routine;
+    result->val_pseudo_entry.params = g_sequence_new(free_param);
     return result;
 }
 

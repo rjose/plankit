@@ -1,7 +1,5 @@
-: decide  if 10 else 20 then ;
+: decide  if 10 11 12 else 2.01 3.02 then ;
 
-1 decide
-.s
 
 0 decide
 .s

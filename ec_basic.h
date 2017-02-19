@@ -15,6 +15,13 @@ void EC_push_param0(gpointer gp_entry);
 void EC_print_stack(gpointer gp_entry);
 void EC_print_definition(gpointer gp_entry);
 
+void EC_if(gpointer gp_entry);
+void EC_then(gpointer gp_entry);
+void EC_else(gpointer gp_entry);
+
+void EC_jmp_if_false(gpointer gp_entry);
+void EC_jmp(gpointer gp_entry);
+
 void EC_define(gpointer gp_entry);
 void EC_execute(gpointer gp_entry);
 void EC_end_define(gpointer gp_entry);

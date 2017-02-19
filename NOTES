@@ -162,7 +162,7 @@ entries.
 - [X] Add execute routine to define_entry->params
 - [X] Add an immediate flag
 - [X] Add compiling of a simple entry
-- [X] Define ';' 
+- [X] Define ';'
 - [X] Add compile code
 - [ ] Define EC_execute
 
@@ -268,3 +268,67 @@ Let's revise our print_param so it can take a prefix and a FILE pointer.
 >> Sat Feb 18 16:25:51 PST 2017
 Alright, the last step before I start building some tools is to add
 branching. We'll do the if/else/then words.
+
+
+>> Sat Feb 18 17:28:17 PST 2017
+Let's see how we should create branching.
+
+Textual definition
+------------------
+0  if
+1  10
+2  else
+3  20
+4  then
+
+
+Compiled definition
+-------------------
+0 EC_conditional_jump
+     - If false, jump to param[0]
+     - param[0] = 3
+1 10
+2 EC_unconditional_jump to param[0]
+     - param[1] = 4
+3 20
+4 ?
+
+
+How do we get to the compiled definition?
+-----------------------------------------
+0: EC_if:
+     Add new pseudo entry (conditional jump) to the definition
+     Create a param that points at this entry and push onto the stack
+
+1: Add pseudo entry to push literal 10
+
+2: EC_else:
+     Pop param and get the entry it points to
+     Set the entry's first param to the current length of the definition + 2 (being 3)
+     Create a param that points at this entry and push onto the stack
+
+3: Add pseudo entry to push literal 20
+
+_: EC_then
+     Pop param and get the entry it points to
+     Set the entry's first param to the current length of the definition + 1 (being 4)
+
+
+OK, I need to be able to get the current count of definition parameters and I need to
+be able to set the instruction pointer based on the number.
+
+We can get the current length of the parameters. We can also set the _ip to a delta, so
+I think we're good.
+
+
+>> Sat Feb 18 18:03:43 PST 2017
+Can push literals! Let's take a mini break and then implement if, else, and then.
+
+
+(43 min) Sat Feb 18 18:46:25 PST 2017
+OK, I just need to implement jmp and jmp_if_false. Let's do that after a break.
+
+
+<< (65 min) Sat Feb 18 19:08:40 PST 2017
+Got branching to work! Let's clean it up and then check in. After that, I'll
+update the documentation.

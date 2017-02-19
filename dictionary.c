@@ -71,6 +71,18 @@ void build_dictionary() {
     add_entry(".d")->routine = EC_print_definition;
     add_entry("!")->routine = EC_store_variable_value;
     add_entry("@")->routine = EC_fetch_variable_value;
+
+    entry = add_entry("if");
+    entry->immediate = 1;
+    entry->routine = EC_if;
+
+    entry = add_entry("then");
+    entry->immediate = 1;
+    entry->routine = EC_then;
+
+    entry = add_entry("else");
+    entry->immediate = 1;
+    entry->routine = EC_else;
 }
 
 Entry *latest_entry() {

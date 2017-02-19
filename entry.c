@@ -37,6 +37,7 @@ void compile(Token token) {
             entry = find_entry(token.word);
             if (!entry) {
                 handle_error(ERR_UNKNOWN_WORD);
+                fprintf(stderr, "-----> %s\n", token.word);
                 return;
             }
             else if(entry->immediate) {

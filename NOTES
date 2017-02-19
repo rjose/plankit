@@ -263,3 +263,8 @@ a long jump to it.
 
 >> Sat Feb 18 11:39:54 PST 2017
 Let's revise our print_param so it can take a prefix and a FILE pointer.
+
+
+>> Sat Feb 18 16:25:51 PST 2017
+Alright, the last step before I start building some tools is to add
+branching. We'll do the if/else/then words.

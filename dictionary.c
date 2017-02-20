@@ -45,6 +45,11 @@ Entry *add_entry(const gchar *word) {
 }
 
 
+static void hook_up_extensions() {
+    add_entry("lex-notes")->routine = EC_add_notes_lexicon;
+}
+
+
 // -----------------------------------------------------------------------------
 /** Builds the dictionary for the interpreter.
 
@@ -83,6 +88,8 @@ void build_dictionary() {
     entry = add_entry("else");
     entry->immediate = 1;
     entry->routine = EC_else;
+
+    hook_up_extensions();
 }
 
 

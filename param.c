@@ -17,7 +17,7 @@ See \ref param_types "Param types" for a description of each type of parameter.
 // -----------------------------------------------------------------------------
 Param *new_param() {
     Param *result = g_new(Param, 1);
-    result->val_str = NULL;
+    result->val_string = NULL;
     return result;
 }
 
@@ -61,7 +61,7 @@ Param *new_double_param(gdouble val_double) {
 Param *new_str_param(const gchar *str) {
     Param *result = new_param();
     result->type = 'S';
-    result->val_str = g_strdup(str);
+    result->val_string = g_strdup(str);
     return result;
 }
 
@@ -130,7 +130,7 @@ void copy_param(Param *dst, Param *src) {
     *dst = *src;
 
     // Make a copy of the string since the dst needs to own it
-    dst->val_str = g_strdup(src->val_str);
+    dst->val_string = g_strdup(src->val_string);
 }
 
 
@@ -156,7 +156,7 @@ void print_param(Param *param, FILE *file, const gchar *prefix) {
             break;
 
         case 'S':
-            fprintf(file, "%sS: %s\n", prefix, param->val_str);
+            fprintf(file, "%sS: %s\n", prefix, param->val_string);
             break;
 
         case 'E':
@@ -183,6 +183,6 @@ void print_param(Param *param, FILE *file, const gchar *prefix) {
 // -----------------------------------------------------------------------------
 void free_param(gpointer gp_param) {
     Param *param = gp_param;
-    g_free(param->val_str);
+    g_free(param->val_string);
     g_free(param);
 }

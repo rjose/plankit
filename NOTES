@@ -396,3 +396,17 @@ Feb 20, 2017
 ------------
 >> Mon Feb 20 08:19:38 PST 2017
 Let's add comments
+
+
+<< (3 min) Mon Feb 20 08:22:04 PST 2017
+Done!
+
+Let's create a word that loads that notes lexicon. How about
+def-notes or add-notes or lex-notes. Or we could do
+something like
+
+Notes lex-load
+
+
+Mon Feb 20 08:28:29 PST 2017
+Let's just use lex-notes.

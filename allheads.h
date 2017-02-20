@@ -52,7 +52,7 @@ typedef struct {
 
     gint64 val_int;           /**< \brief Integer value of an 'I' param */
     gdouble val_double;       /**< \brief Double value of a 'D' param */
-    gchar *val_str;           /**< \brief String value of an 'S' param */
+    gchar *val_string;        /**< \brief String value of an 'S' param */
     gpointer val_entry;       /**< \brief Entry pointer value of an 'E' param */
     routine_ptr val_routine;  /**< \brief Routine ptr of an 'R' param */
     Entry val_pseudo_entry;   /**< \brief Pseudo Entry of a 'P' param */
@@ -68,3 +68,4 @@ typedef struct {
 #include "stack.h"
 #include "return_stack.h"
 #include "ec_basic.h"
+#include "ext_notes.h"

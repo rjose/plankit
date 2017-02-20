@@ -19,6 +19,7 @@
 // =============================================================================
 // External functions
 // =============================================================================
+extern int yyleng;
 extern int yylex();          /**< \brief Gets next token from the input stream */
 extern int yylex_destroy();  /**< \brief Gets next token from the input stream */
 extern FILE* yyin;           /**< \brief Points to the input stream */

@@ -12,6 +12,7 @@ for all files so that.
 #include <stdio.h>
 #include <setjmp.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <gsl/gsl_cdf.h>
 #include <glib.h>

@@ -53,6 +53,20 @@ Param *new_double_param(gdouble val_double) {
 
 
 // -----------------------------------------------------------------------------
+/** Creates a new string-valued Param
+
+\param str: String to copy
+*/
+// -----------------------------------------------------------------------------
+Param *new_str_param(const gchar *str) {
+    Param *result = new_param();
+    result->type = 'S';
+    result->val_str = g_strdup(str);
+    return result;
+}
+
+
+// -----------------------------------------------------------------------------
 /** Creates a new routine-valued Param.
 
 \param val_routine: Value of the Param being created

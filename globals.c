@@ -86,7 +86,13 @@ token with type equal to EOF.
 Token get_token() {
     Token result;
     result.type = yylex();
-    g_strlcpy(result.word, yytext, MAX_WORD_LEN);
+    if (result.type == 'S') {
+        g_strlcpy(result.word, yytext, MAX_WORD_LEN);
+
+    }
+    else {
+        g_strlcpy(result.word, yytext, MAX_WORD_LEN);
+    }
     return result;
 }
 

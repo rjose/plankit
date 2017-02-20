@@ -8,6 +8,8 @@ DIGIT  [0-9]
 
 %%
 
+\"[^"]*\"              {return 'S';}
+
 [[:space:]]+           /* Skip whitespace */
 
 {DIGIT}+               {return 'I';}

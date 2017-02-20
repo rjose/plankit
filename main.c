@@ -40,6 +40,7 @@ static void push_token(Token token) {
     Param *param_new;
     gint64 val_int;
     gdouble val_double;
+    gchar *val_str;
 
     switch(token.type) {
         case 'I':
@@ -54,9 +55,22 @@ static void push_token(Token token) {
             push_param(param_new);
             break;
 
+        case 'S':
+            // Start copying yyext after first '"'...
+            val_str = g_strdup(yytext+1);
+
+            // ...and NUL out second '"'
+            val_str[yyleng-2] = '\0';
+
+            param_new = new_str_param(val_str);
+            push_param(param_new);
+
+            g_free(val_str);
+            break;
+
         default:
             handle_error(ERR_UNKNOWN_TOKEN_TYPE);
-            fprintf(stderr, "----> %s\n", token.word);
+            fprintf(stderr, "----> %c: %s\n", token.type, token.word);
             return;
     }
 }

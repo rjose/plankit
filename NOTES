@@ -332,3 +332,61 @@ OK, I just need to implement jmp and jmp_if_false. Let's do that after a break.
 << (65 min) Sat Feb 18 19:08:40 PST 2017
 Got branching to work! Let's clean it up and then check in. After that, I'll
 update the documentation.
+
+
+>> Sat Feb 18 21:46:08 PST 2017
+Tomorrow, I'll work on defining an application language I can use. I want this
+to be something that can be flexible. I want it to be pluggable and have the
+layers be well-defined so I can pull data easily from many sources.
+
+
+>> Sun Feb 19 13:29:44 PST 2017
+I can't think of an application to develop. Maybe I should start with a hololens
+that can show project data and go from there. The problem is that I'm not sure
+how detailed or abstract to make this.
+
+I don't know what to develop.
+
+Feb 19, 2017
+------------
+
+>> Sun Feb 19 17:39:52 PST 2017
+Let's create a sqlite database to hold some information. What should we store
+in it? How about my log entries? Maybe I could have a function that could
+return structured data that can be rendered. For instance, we could
+have it return JSON data that can be rendered into a console or in a
+web page.
+
+Alright, so what are the fields? Timestamp, entry, ID, type. The type could
+be used to indicate the start of a work chunk, an entry in the middle of
+a work chunk. An arbitrary note, and the end of a work chunk.
+
+I could have words like this:
+
+"This could be a
+multiline entry" start
+
+"This is a middle of work chunk note" mid
+
+"This is just an arbitrary note" note
+
+"This is the end" end
+
+last  # This could show the latest chunk of notes
+all   # this could show all of the notes
+today # This could show all of the notes for today
+2 days # This could show all the notes for the past 2 days
+chunk  # Show the current chunk
+
+
+(7 min) Sun Feb 19 17:46:59 PST 2017
+We'll need to add support for strings and JSON data.
+
+
+>> Sun Feb 19 18:33:50 PST 2017
+I'm going to use https://github.com/zserge/jsmn to parse JSON. Let's build and
+install this.
+
+
+>> Sun Feb 19 19:19:34 PST 2017
+Let's see if we can add string support

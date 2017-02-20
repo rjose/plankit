@@ -1,7 +1,7 @@
 P=main
 OBJECTS=main.o lex.yy.o entry.o dictionary.o stack.o return_stack.o ec_basic.o param.o globals.o
-CFLAGS= -include allheads.h `pkg-config --cflags glib-2.0` -g -Wall
-LDLIBS= -lfl `pkg-config --libs gsl glib-2.0`
+CFLAGS= -include allheads.h `pkg-config --cflags glib-2.0 sqlite3` -g -Wall
+LDLIBS= -L. -ljsmn -lfl `pkg-config --libs gsl glib-2.0 sqlite3`
 CC=c99
 
 %.o:%.h

@@ -8,6 +8,8 @@ DIGIT  [0-9]
 
 %%
 
+#.*\n                  /* Skip comments */
+
 \"[^"]*\"              {return 'S';}
 
 [[:space:]]+           /* Skip whitespace */

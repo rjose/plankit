@@ -8,13 +8,54 @@ routines used when defining entries dynamically.
 */
 
 
+// -----------------------------------------------------------------------------
+/** Convenience function to add a variable entry to the dictionary.
+*/
+// -----------------------------------------------------------------------------
+void add_variable(const gchar *word) {
+    Entry *entry_new = add_entry(word);
+    entry_new->routine = EC_push_entry_address;
+
+    // Adds an empty param to the variable entry for storing values
+    Param *value = new_param();
+    add_entry_param(entry_new, value);
+}
+
+
+// -----------------------------------------------------------------------------
+/** Convenience function to execute a word from the dictionary.
+*/
+// -----------------------------------------------------------------------------
+void find_and_execute(const gchar *word) {
+    Entry *entry = find_entry(word);
+    if (!entry) {
+        handle_error(ERR_UNKNOWN_WORD);
+        fprintf(stderr, "---->%s\n", word);
+        return;
+    }
+    execute(entry);
+}
+
+
+// -----------------------------------------------------------------------------
+/** Sets the _quit flag so the main control loop stops.
+*/
+// -----------------------------------------------------------------------------
 void EC_quit(gpointer gp_entry) {
     _quit = 1;
 }
 
 
+// -----------------------------------------------------------------------------
+/** Switches the interpreter's input stream to stdin so the user can interact
+    with the interpreter.
+
+\note We'll need a different way of doing this if we want to support loading
+      forth files or executing forth statements from a string buffer.
+
+*/
+// -----------------------------------------------------------------------------
 void EC_interactive(gpointer gp_entry) {
-    printf("Interactive\n");
     yyrestart(stdin);
 }
 
@@ -41,14 +82,6 @@ void EC_constant(gpointer gp_entry) {
 }
 
 
-void add_variable(const gchar *word) {
-    Entry *entry_new = add_entry(word);
-    entry_new->routine = EC_push_entry_address;
-
-    // Adds an empty param to the variable entry for storing values
-    Param *value = new_param();
-    add_entry_param(entry_new, value);
-}
 
 
 // -----------------------------------------------------------------------------
@@ -422,12 +455,3 @@ void EC_execute(gpointer gp_entry) {
 }
 
 
-void find_and_execute(const gchar *word) {
-    Entry *entry = find_entry(word);
-    if (!entry) {
-        handle_error(ERR_UNKNOWN_WORD);
-        fprintf(stderr, "---->%s\n", word);
-        return;
-    }
-    execute(entry);
-}

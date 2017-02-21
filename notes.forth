@@ -10,4 +10,5 @@ lex-notes
 
 notes-open
 
+today
 .i

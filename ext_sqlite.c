@@ -1,14 +1,12 @@
 /** \file ext_sqlite.c
 */
 
-#if 0
-int sqlite3_open(
-  const char *filename,   /* Database filename (UTF-8) */
-  sqlite3 **ppDb          /* OUT: SQLite db handle */
-);
-#endif
+// -----------------------------------------------------------------------------
+/** Pops a db filename, opens an sqlite3 connection to it, and pushes the
+connection onto the stack.
 
-
+*/
+// -----------------------------------------------------------------------------
 static void EC_sqlite3_open(gpointer gp_entry) {
     Param *db_file = pop_param();
 
@@ -26,6 +24,10 @@ static void EC_sqlite3_open(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pops a database connection and closes it.
+*/
+// -----------------------------------------------------------------------------
 static void EC_sqlite3_close(gpointer gp_entry) {
     Param *param_connection = pop_param();
 
@@ -43,6 +45,17 @@ static void EC_sqlite3_close(gpointer gp_entry) {
 
 
 
+// -----------------------------------------------------------------------------
+/** Defines sqlite3 lexicon and adds it to the dictionary.
+
+
+The following words are defined:
+
+- sqlite3-open: (db-name -- db-connection) Opens a connection to a database
+- sqlite3-close: (db-connection -- ) Closes a connection to a database
+
+*/
+// -----------------------------------------------------------------------------
 void EC_add_sqlite_lexicon(gpointer gp_entry) {
     add_entry("sqlite3-open")->routine = EC_sqlite3_open; 
     add_entry("sqlite3-close")->routine = EC_sqlite3_close; 

@@ -9,6 +9,9 @@ for all files so that.
 
 #pragma once
 
+#define _GNU_SOURCE
+
+#include <time.h>
 #include <stdio.h>
 #include <setjmp.h>
 #include <stdlib.h>

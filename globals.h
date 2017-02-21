@@ -14,6 +14,7 @@
 #define ERR_UNKNOWN_TOKEN_TYPE  2
 #define ERR_STACK_UNDERFLOW  3
 #define ERR_INVALID_PARAM  4
+#define ERR_GENERIC_ERROR  5
 
 
 // =============================================================================
@@ -21,6 +22,7 @@
 // =============================================================================
 extern int yyleng;
 extern int yylex();          /**< \brief Gets next token from the input stream */
+extern void yyrestart(FILE *file);
 extern int yylex_destroy();  /**< \brief Gets next token from the input stream */
 extern FILE* yyin;           /**< \brief Points to the input stream */
 extern char *yytext;         /**< \brief Current token */
@@ -60,6 +62,7 @@ extern GQueue *_return_stack;
 extern gchar _mode;
 extern jmp_buf _error_jmp_buf;
 extern GSequenceIter *_ip;
+extern gboolean _quit;
 
 const gchar *error_type_to_string(gint error_type);
 Token get_token();

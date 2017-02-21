@@ -46,6 +46,7 @@ Entry *add_entry(const gchar *word) {
 
 
 static void hook_up_extensions() {
+    add_entry("lex-sqlite")->routine = EC_add_sqlite_lexicon;
     add_entry("lex-notes")->routine = EC_add_notes_lexicon;
 }
 
@@ -63,6 +64,9 @@ that we can control the extensions dynamically.
 // -----------------------------------------------------------------------------
 void build_dictionary() {
     Entry *entry;
+
+    add_entry(".q")->routine = EC_quit;
+    add_entry(".i")->routine = EC_interactive;
 
     add_entry("constant")->routine = EC_constant;
     add_entry("variable")->routine = EC_variable;

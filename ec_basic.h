@@ -3,6 +3,9 @@
 
 #pragma once
 
+void EC_quit(gpointer gp_entry);
+void EC_interactive(gpointer gp_entry);
+
 void EC_constant(gpointer gp_entry);
 void EC_variable(gpointer gp_entry);
 
@@ -26,4 +29,5 @@ void EC_define(gpointer gp_entry);
 void EC_execute(gpointer gp_entry);
 void EC_end_define(gpointer gp_entry);
 
-
+void add_variable(const gchar *word);
+void find_and_execute(const gchar *word);

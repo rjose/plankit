@@ -26,6 +26,8 @@ gchar _mode = 'E';              /**< \brief 'E'xecuting or 'C'ompiling */
 
 GSequenceIter *_ip = NULL;      /**< \brief Next instruction (Param) to execute in a definition */
 
+gboolean _quit = 0;             /**< \brief To quit program cleanly, set _quit=1 */
+
 
 
 // =============================================================================
@@ -38,6 +40,7 @@ static gchar unknown_error[] = "Unknown error";
 static gchar unknown_token_type[] = "Unknown token type";
 static gchar stack_underflow[] = "Stack underflow";
 static gchar invalid_param[] = "Invalid parameter";
+static gchar generic_error[] = "Generic error";
 
 
 // -----------------------------------------------------------------------------
@@ -65,6 +68,10 @@ const gchar *error_type_to_string(gint error_type) {
 
         case ERR_INVALID_PARAM:
             result = invalid_param;
+            break;
+
+        case ERR_GENERIC_ERROR:
+            result = generic_error;
             break;
 
         default:

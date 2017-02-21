@@ -16,6 +16,7 @@ for all files so that.
 
 #include <gsl/gsl_cdf.h>
 #include <glib.h>
+#include <sqlite3.h>
 
 #define MAX_WORD_LEN  128       /**< \brief Longest entry word */
 
@@ -45,6 +46,7 @@ Its "type" is a character that indicates which field holds the parameter's value
 - 'E': Points to an Entry in _dictionary
 - 'R': Routine pointer
 - 'P': Pseudo entry
+- 'C': Custom data
 
 */
 typedef struct {
@@ -56,6 +58,8 @@ typedef struct {
     gpointer val_entry;       /**< \brief Entry pointer value of an 'E' param */
     routine_ptr val_routine;  /**< \brief Routine ptr of an 'R' param */
     Entry val_pseudo_entry;   /**< \brief Pseudo Entry of a 'P' param */
+    gpointer val_custom;      /**< \brief Custom data *not* freed  by free_param */
+    gchar val_custom_comment[MAX_WORD_LEN];  /**< \brief Describes custom data */ 
 } Param;
 
 
@@ -69,3 +73,4 @@ typedef struct {
 #include "return_stack.h"
 #include "ec_basic.h"
 #include "ext_notes.h"
+#include "ext_sqlite.h"

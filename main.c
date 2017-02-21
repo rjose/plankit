@@ -82,15 +82,25 @@ static void push_token(Token token) {
 /** Sets up the interpreter and then runs the main control loop.
 */
 // -----------------------------------------------------------------------------
-int main() {
+int main(int argc, char *argv[]) {
     Entry *entry;
+    FILE *input_file = NULL;
 
     build_dictionary();
     create_stack();
     create_stack_r();
+    if (argc > 1) {
+        printf("File: %s\n", argv[1]);
+        input_file = fopen(argv[1], "r");
+        if (!input_file) {
+            fprintf(stderr, "Unable to open file: %s\n", argv[1]);
+            exit(1);
+        }
+        yyin = input_file;
+    }
 
     // Control loop
-    while(1) {
+    while(!_quit) {
         Token token = get_token();
 
         if (token.type == EOF) break;
@@ -118,4 +128,6 @@ int main() {
     destroy_stack();
     destroy_stack_r();
     yylex_destroy();
+
+    if (input_file) fclose(input_file);
 }

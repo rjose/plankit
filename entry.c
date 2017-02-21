@@ -32,6 +32,7 @@ void compile(Token token) {
     Param *param;
     Entry *pseudo_entry;
     Param *param_literal;
+    gchar *val_string = NULL;
 
     switch(token.type) {
         case 'W':
@@ -65,6 +66,24 @@ void compile(Token token) {
             param = new_pseudo_entry_param("push-literal-D", EC_push_param0);
             pseudo_entry = &param->val_pseudo_entry;
             param_literal = new_double_param(g_ascii_strtod(token.word, NULL));
+            add_entry_param(pseudo_entry, param_literal);
+
+            add_entry_param(entry_latest, param);
+            break;
+
+        case 'S':
+            // Create pseudo entry that pushes a string onto the stack
+            param = new_pseudo_entry_param("push-literal-S", EC_push_param0);
+            pseudo_entry = &param->val_pseudo_entry;
+
+            // Start copying yyext after first '"'...
+            val_string =  g_strdup(yytext+1);
+
+            // ...and NUL out second '"'
+            val_string[yyleng-2] = '\0';
+
+            param_literal = new_str_param(val_string);
+            g_free(val_string);
             add_entry_param(pseudo_entry, param_literal);
 
             add_entry_param(entry_latest, param);

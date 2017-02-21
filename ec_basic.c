@@ -7,6 +7,17 @@ routines used when defining entries dynamically.
 
 */
 
+
+void EC_quit(gpointer gp_entry) {
+    _quit = 1;
+}
+
+
+void EC_interactive(gpointer gp_entry) {
+    printf("Interactive\n");
+    yyrestart(stdin);
+}
+
 // -----------------------------------------------------------------------------
 /** Creates a new constant entry.
 
@@ -30,6 +41,16 @@ void EC_constant(gpointer gp_entry) {
 }
 
 
+void add_variable(const gchar *word) {
+    Entry *entry_new = add_entry(word);
+    entry_new->routine = EC_push_entry_address;
+
+    // Adds an empty param to the variable entry for storing values
+    Param *value = new_param();
+    add_entry_param(entry_new, value);
+}
+
+
 // -----------------------------------------------------------------------------
 /** Creates a new variable entry.
 
@@ -43,13 +64,7 @@ entry onto the stack.
 // -----------------------------------------------------------------------------
 void EC_variable(gpointer gp_entry) {
     Token token = get_token();
-
-    Entry *entry_new = add_entry(token.word);
-    entry_new->routine = EC_push_entry_address;
-
-    // Adds an empty param to the variable entry for storing values
-    Param *value = new_param();
-    add_entry_param(entry_new, value);
+    add_variable(token.word);
 }
 
 
@@ -404,4 +419,15 @@ void EC_execute(gpointer gp_entry) {
                 return;
         }
     }
+}
+
+
+void find_and_execute(const gchar *word) {
+    Entry *entry = find_entry(word);
+    if (!entry) {
+        handle_error(ERR_UNKNOWN_WORD);
+        fprintf(stderr, "---->%s\n", word);
+        return;
+    }
+    execute(entry);
 }

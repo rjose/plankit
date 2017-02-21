@@ -410,3 +410,44 @@ Notes lex-load
 
 Mon Feb 20 08:28:29 PST 2017
 Let's just use lex-notes.
+
+
+>> Mon Feb 20 11:04:21 PST 2017
+Let's add a lexicon for sqlite. I think we'll assume that the sqlite db
+has already been set up. We'll load a database specified by a string.
+
+
+
+<< (11 min) Mon Feb 20 11:15:03 PST 2017
+What words do we need to add to the sqlite lexicon?
+
+TODO: We need to create an app that implements my task stack way of working
+
+
+Mon Feb 20 12:10:59 PST 2017
+OK, I can create an sqlite db connection! 
+
+TODO: Create .q and .i words to quit and go into interactive mode
+
+
+
+>> Mon Feb 20 13:54:22 PST 2017
+Let's create a .q and a .i word
+
+
+<< (21 min) Mon Feb 20 14:15:26 PST 2017
+OK, I was able to add the ".q" and ".i" words. Pretty cool.
+
+Let's take a break and then create a schema for the notes.db.
+
+OK, I have a schema. Let's try adding a note from Forth.
+
+
+Mon Feb 20 15:02:35 PST 2017
+OK, I can write a note to the database. Let's take a break and then make this
+more generic and then add the rest of the note words. I'll clean this up
+so that I don't have to rely on notes-db being defined.
+
+Let's clean up where the notes words are defined and then check in.
+
+I need to add support for strings in definitions.

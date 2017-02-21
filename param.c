@@ -84,7 +84,7 @@ Param *new_routine_param(routine_ptr val_routine) {
 // -----------------------------------------------------------------------------
 /** Creates a new entry-valued Param.
 
-\param val_routine: Value of the Param being created
+\param val_entry: Value of the Param being created
 \returns newly allocated Param with the specified entry value
 
 This is typically used when creating new dictionary entries.
@@ -117,6 +117,24 @@ Param *new_pseudo_entry_param(const gchar *word, routine_ptr routine) {
     result->val_pseudo_entry.params = g_sequence_new(free_param);
     return result;
 }
+
+
+// -----------------------------------------------------------------------------
+/** Creates a new custom-data valued Param
+
+\param val_custom: Custom data for Param
+\returns newly allocated Param with the specified entry value
+
+*/
+// -----------------------------------------------------------------------------
+Param *new_custom_param(gpointer val_custom, const gchar *comment) {
+    Param *result = new_param();
+    result->type = 'C';
+    result->val_custom = val_custom;
+    g_strlcpy(result->val_custom_comment, comment, MAX_WORD_LEN);
+    return result;
+}
+
 
 
 // -----------------------------------------------------------------------------
@@ -170,6 +188,14 @@ void print_param(Param *param, FILE *file, const gchar *prefix) {
 
         case 'P':
             fprintf(file, "%sP: %s\n", prefix, param->val_pseudo_entry.word);
+            break;
+
+        case 'C':
+            fprintf(file, "%sC: %s\n", prefix, param->val_custom_comment);
+            break;
+
+        default:
+            fprintf(file, "%s%c: %s\n", prefix, param->type, "Unknown type");
             break;
     }
 }

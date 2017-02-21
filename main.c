@@ -90,7 +90,6 @@ int main(int argc, char *argv[]) {
     create_stack();
     create_stack_r();
     if (argc > 1) {
-        printf("File: %s\n", argv[1]);
         input_file = fopen(argv[1], "r");
         if (!input_file) {
             fprintf(stderr, "Unable to open file: %s\n", argv[1]);

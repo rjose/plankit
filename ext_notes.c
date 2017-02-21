@@ -41,6 +41,12 @@ static Note *new_note(gint64 id, gchar type, const gchar *note, const gchar *tim
     return result;
 }
 
+
+static Note *copy_note(Note *src) {
+    Note *result = new_note(src->id, src->type, src->note, src->timestamp_text, src->date_text);
+    return result;
+}
+
 // -----------------------------------------------------------------------------
 /** Frees an allocated Note.
 */
@@ -228,49 +234,13 @@ static void write_elapsed_minutes(gchar *dst, gint64 len, Note *note_l, Note *no
 
 
 // -----------------------------------------------------------------------------
-/** Prints all notes for today
+/** Gets all notes for today and pushes onto stack
 */
 // -----------------------------------------------------------------------------
-static void EC_today(gpointer gp_entry) {
+static void EC_today_notes(gpointer gp_entry) {
     GSequence *records = select_notes("where date = date('now')");
-
-    // TODO: Use print instead
-    Note *current_start_note = NULL;
-    GSequenceIter *iter = g_sequence_get_begin_iter(records);
-    gchar elapsed_min_text[MAX_ELAPSED_LEN];
-
-    while (!g_sequence_iter_is_end(iter)) {
-        Note *note = g_sequence_get(iter);
-
-        switch(note->type) {
-            case 'N':
-                printf("%s\n%s\n\n", note->timestamp_text, note->note);
-                break;
-
-            case 'S':
-                current_start_note = note;
-                printf("\n>> %s\n%s\n\n", note->timestamp_text, note->note);
-                break;
-
-            case 'M':
-                write_elapsed_minutes(elapsed_min_text, MAX_ELAPSED_LEN, note, current_start_note);
-                printf("(%s min) %s\n%s\n\n", elapsed_min_text, note->timestamp_text, note->note);
-                break;
-
-            case 'E':
-                write_elapsed_minutes(elapsed_min_text, MAX_ELAPSED_LEN, note, current_start_note);
-                printf("<< (%s min) %s\n%s\n\n", elapsed_min_text, note->timestamp_text, note->note);
-                current_start_note = NULL;
-                break;
-
-            default:
-                printf("TODO: Format this:\n--> %s\n\n", note->note);
-                break;
-        }
-
-        iter = g_sequence_iter_next(iter);
-    }
-    g_sequence_free(records);
+    Param *param_new = new_custom_param(records, "GSequence of Note");
+    push_param(param_new);
 }
 
 
@@ -280,7 +250,7 @@ static Note *get_latest_S_note() {
 
     Note *result = NULL;
     if (g_sequence_get_length(records) == 1) {
-        result = g_sequence_get(g_sequence_get_begin_iter(records));
+        result = copy_note(g_sequence_get(g_sequence_get_begin_iter(records)));
     }
 
     // Cleanup
@@ -306,6 +276,8 @@ static void EC_time(gpointer gp_entry) {
         gint64 minutes = elapsed_min(now, start_note_time);
         printf("%ld min\n", minutes);
     }
+
+    free_note(note);
 }
 
 
@@ -323,10 +295,10 @@ static void EC_chunk_notes(gpointer gp_entry) {
     else {
         snprintf(sql_condition, CONDITION_LEN, "where id >= %ld", note->id);
         records = select_notes(sql_condition);
+        free_note(note);
     }
     Param *param_new = new_custom_param(records, "GSequence of Notes");
     push_param(param_new);
-
 }
 
 
@@ -374,6 +346,7 @@ static void EC_print(gpointer gp_entry) {
 
     // Cleanup
     g_sequence_free(records);
+    free_param(param_note_sequence);
 }
 
 
@@ -400,8 +373,8 @@ void EC_add_notes_lexicon(gpointer gp_entry) {
     add_entry("M")->routine = EC_middle_chunk;
     add_entry("N")->routine = EC_generic_note;
     add_entry("E")->routine = EC_end_chunk;
-    add_entry("today")->routine = EC_today;
     add_entry("time")->routine = EC_time;
+    add_entry("today-notes")->routine = EC_today_notes;
     add_entry("chunk-notes")->routine = EC_chunk_notes;
     add_entry("print")->routine = EC_print;
 }

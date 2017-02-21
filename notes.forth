@@ -8,11 +8,12 @@ lex-notes
 ## Closes a database connection
 : notes-close  notes-db @  sqlite3-close ;
 
-: chunk  chunk-notes print ;
+: c  chunk-notes print ;
+: today  today-notes print ;
+: t  time ;
 
 : .q  notes-close .q ;
 
 notes-open
 
-today
 .i

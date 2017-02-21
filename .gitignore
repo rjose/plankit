@@ -11,3 +11,4 @@ html/*
 latex/*
 *.core
 vgcore.*
+*.db

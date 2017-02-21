@@ -3,6 +3,7 @@
 
 #define MAX_TIMESTAMP_LEN 48
 #define MAX_ELAPSED_LEN 16
+#define NOTE_FIELDS   "id, type, note, timestamp, date from notes "
 
 // -----------------------------------------------------------------------------
 /** Represents a note from a database record
@@ -66,6 +67,64 @@ static sqlite3 *get_db_connection() {
     free_param(param_connection);
     return result;
 }
+
+
+// -----------------------------------------------------------------------------
+/** Callback used to write note records from an SQL query into a sequence of records.
+*/
+// -----------------------------------------------------------------------------
+static int append_note_cb(gpointer gp_records, int num_cols, char **values, char **cols) {
+    GSequence *records = gp_records;
+    if (num_cols != 5) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Unexpected num cols from note query\n");
+        return 1;
+    }
+    gint64 id = g_ascii_strtoll(values[0], NULL, 10);
+    const gchar *type_text = values[1];
+    const gchar *note_text = values[2];
+    const gchar *timestamp_text = values[3];
+    const gchar *date_text = values[4];
+
+    Note *note_new = new_note(id, type_text[0], note_text, timestamp_text, date_text);
+
+    g_sequence_append(records, note_new);
+    return 0;
+}
+
+
+// -----------------------------------------------------------------------------
+/** Returns a GSequence of notes matching the conditions.
+
+\note The caller is responsible for freeing the returned GSequence.
+*/
+// -----------------------------------------------------------------------------
+static GSequence *select_notes(const gchar *sql_conditions) {
+    sqlite3 *connection = get_db_connection();
+
+    gchar *select = "select " NOTE_FIELDS;
+    gchar *query = g_strconcat(select, sql_conditions, NULL);
+
+
+    GSequence *result = g_sequence_new(free_note);
+
+    char *error_message = NULL;
+    sqlite3_exec(connection, query, append_note_cb, result, &error_message);
+
+    if (error_message) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Problem executing 'select_notes'\n----->%s", error_message);
+
+        g_free(result);
+        result = NULL;
+    }
+
+    // Cleanup
+    g_free(query);
+
+    return result;
+}
+
 
 // -----------------------------------------------------------------------------
 /** Helper function to write notes to the database.
@@ -132,36 +191,12 @@ static void EC_generic_note(gpointer gp_entry) {
 
 
 // -----------------------------------------------------------------------------
-/** Callback used to write note records from an SQL query into a sequence of records.
-*/
-// -----------------------------------------------------------------------------
-static int append_note_cb(gpointer gp_records, int num_cols, char **values, char **cols) {
-    GSequence *records = gp_records;
-    if (num_cols != 5) {
-        handle_error(ERR_GENERIC_ERROR);
-        fprintf(stderr, "-----> Unexpected num cols from note query\n");
-        return 1;
-    }
-    gint64 id = g_ascii_strtoll(values[0], NULL, 10);
-    const gchar *type_text = values[1];
-    const gchar *note_text = values[2];
-    const gchar *timestamp_text = values[3];
-    const gchar *date_text = values[4];
-
-    Note *note_new = new_note(id, type_text[0], note_text, timestamp_text, date_text);
-
-    g_sequence_append(records, note_new);
-    return 0;
-}
-
-
-// -----------------------------------------------------------------------------
 /** Computes the elapsed minutes between two time_t structs.
 */
 // -----------------------------------------------------------------------------
 static gint64 elapsed_min(time_t time_l, time_t time_r) {
     double delta_s = difftime(time_l, time_r);
-    gint64 result = delta_s/60.0;
+    gint64 result = ceil(delta_s/60.0);
     return result;
 }
 
@@ -197,22 +232,13 @@ static void write_elapsed_minutes(gchar *dst, gint64 len, Note *note_l, Note *no
 */
 // -----------------------------------------------------------------------------
 static void EC_today(gpointer gp_entry) {
-    sqlite3 *connection = get_db_connection();
-    gchar *query = "select id, type, note, timestamp, date from notes where date = date('now')";
-    char *error_message = NULL;
-    gchar elapsed_min[MAX_ELAPSED_LEN];
+    GSequence *records = select_notes("where date = date('now')");
 
-    GSequence *records = g_sequence_new(free_note);
-
-    sqlite3_exec(connection, query, append_note_cb, records, &error_message);
-
-    if (error_message) {
-        handle_error(ERR_GENERIC_ERROR);
-        fprintf(stderr, "-----> Problem executing 'today'\n");
-    }
-
+    // TODO: Use print instead
     Note *current_start_note = NULL;
     GSequenceIter *iter = g_sequence_get_begin_iter(records);
+    gchar elapsed_min_text[MAX_ELAPSED_LEN];
+
     while (!g_sequence_iter_is_end(iter)) {
         Note *note = g_sequence_get(iter);
 
@@ -227,13 +253,13 @@ static void EC_today(gpointer gp_entry) {
                 break;
 
             case 'M':
-                write_elapsed_minutes(elapsed_min, MAX_ELAPSED_LEN, note, current_start_note);
-                printf("(%s min) %s\n%s\n\n", elapsed_min, note->timestamp_text, note->note);
+                write_elapsed_minutes(elapsed_min_text, MAX_ELAPSED_LEN, note, current_start_note);
+                printf("(%s min) %s\n%s\n\n", elapsed_min_text, note->timestamp_text, note->note);
                 break;
 
             case 'E':
-                write_elapsed_minutes(elapsed_min, MAX_ELAPSED_LEN, note, current_start_note);
-                printf("<< (%s min) %s\n%s\n\n", elapsed_min, note->timestamp_text, note->note);
+                write_elapsed_minutes(elapsed_min_text, MAX_ELAPSED_LEN, note, current_start_note);
+                printf("<< (%s min) %s\n%s\n\n", elapsed_min_text, note->timestamp_text, note->note);
                 current_start_note = NULL;
                 break;
 
@@ -248,47 +274,107 @@ static void EC_today(gpointer gp_entry) {
 }
 
 
+
+static Note *get_latest_S_note() {
+    GSequence *records = select_notes("where type = 'S' order by id desc limit 1");
+
+    Note *result = NULL;
+    if (g_sequence_get_length(records) == 1) {
+        result = g_sequence_get(g_sequence_get_begin_iter(records));
+    }
+
+    // Cleanup
+    g_sequence_free(records);
+
+    return result;
+}
+
+
 // -----------------------------------------------------------------------------
 /** Prints the elapsed time since the last 'S' note.
 */
 // -----------------------------------------------------------------------------
 static void EC_time(gpointer gp_entry) {
-    // ---------------------------------
-    // Get latest 'S' note
-    // ---------------------------------
-    sqlite3 *connection = get_db_connection();
-    gchar *query = "select id, type, note, timestamp, date from notes where type = 'S' "
-                   "order by id desc "
-                   "limit 1 ";
-    char *error_message = NULL;
+    Note *note = get_latest_S_note();
 
-    GSequence *records = g_sequence_new(free_note);
-
-    sqlite3_exec(connection, query, append_note_cb, records, &error_message);
-
-    if (error_message) {
-        handle_error(ERR_GENERIC_ERROR);
-        fprintf(stderr, "-----> Problem executing 'time'\n----->%s", error_message);
-    }
-
-    // ---------------------------------
-    // Figure out elapsed time and print
-    // ---------------------------------
-    if (g_sequence_get_length(records) != 1) {
+    if (!note) {
         printf("? min\n");
     }
     else {
-        Note *start_note = g_sequence_get(g_sequence_get_begin_iter(records));
-        time_t start_note_time = mktime(&start_note->timestamp);
+        time_t start_note_time = mktime(&note->timestamp);
         time_t now = time(NULL);
         gint64 minutes = elapsed_min(now, start_note_time);
         printf("%ld min\n", minutes);
+    }
+}
+
+
+static void EC_chunk_notes(gpointer gp_entry) {
+    GSequence *records = NULL;
+    const int CONDITION_LEN = 128;
+    gchar sql_condition[CONDITION_LEN];
+
+    Note *note = get_latest_S_note();
+
+    // If no starting note, then create an empty sequence of records
+    if (!note) {
+        records = g_sequence_new(free_note);
+    }
+    else {
+        snprintf(sql_condition, CONDITION_LEN, "where id >= %ld", note->id);
+        records = select_notes(sql_condition);
+    }
+    Param *param_new = new_custom_param(records, "GSequence of Notes");
+    push_param(param_new);
+
+}
+
+
+static void EC_print(gpointer gp_entry) {
+    // Pop Note sequence
+    Param *param_note_sequence = pop_param();
+    GSequence *records = param_note_sequence->val_custom;
+
+    // Print each note
+    Note *current_start_note = NULL;
+    GSequenceIter *iter = g_sequence_get_begin_iter(records);
+    gchar elapsed_min_text[MAX_ELAPSED_LEN];
+
+    while (!g_sequence_iter_is_end(iter)) {
+        Note *note = g_sequence_get(iter);
+
+        switch(note->type) {
+            case 'N':
+                printf("%s\n%s\n\n", note->timestamp_text, note->note);
+                break;
+
+            case 'S':
+                current_start_note = note;
+                printf("\n>> %s\n%s\n\n", note->timestamp_text, note->note);
+                break;
+
+            case 'M':
+                write_elapsed_minutes(elapsed_min_text, MAX_ELAPSED_LEN, note, current_start_note);
+                printf("(%s min) %s\n%s\n\n", elapsed_min_text, note->timestamp_text, note->note);
+                break;
+
+            case 'E':
+                write_elapsed_minutes(elapsed_min_text, MAX_ELAPSED_LEN, note, current_start_note);
+                printf("<< (%s min) %s\n%s\n\n", elapsed_min_text, note->timestamp_text, note->note);
+                current_start_note = NULL;
+                break;
+
+            default:
+                printf("TODO: Format this:\n--> %s\n\n", note->note);
+                break;
+        }
+
+        iter = g_sequence_iter_next(iter);
     }
 
     // Cleanup
     g_sequence_free(records);
 }
-
 
 
 // -----------------------------------------------------------------------------
@@ -316,4 +402,6 @@ void EC_add_notes_lexicon(gpointer gp_entry) {
     add_entry("E")->routine = EC_end_chunk;
     add_entry("today")->routine = EC_today;
     add_entry("time")->routine = EC_time;
+    add_entry("chunk-notes")->routine = EC_chunk_notes;
+    add_entry("print")->routine = EC_print;
 }

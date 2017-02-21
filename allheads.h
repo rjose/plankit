@@ -20,6 +20,7 @@ for all files so that.
 #include <gsl/gsl_cdf.h>
 #include <glib.h>
 #include <sqlite3.h>
+#include <math.h>
 
 #define MAX_WORD_LEN  128       /**< \brief Longest entry word */
 

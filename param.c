@@ -210,5 +210,11 @@ void print_param(Param *param, FILE *file, const gchar *prefix) {
 void free_param(gpointer gp_param) {
     Param *param = gp_param;
     g_free(param->val_string);
+
+
+    if (param->type == 'P') {
+        g_sequence_free(param->val_pseudo_entry.params);
+    }
+
     g_free(param);
 }

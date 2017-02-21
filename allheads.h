@@ -30,7 +30,8 @@ typedef void (*routine_ptr)(gpointer entry);  /**< \brief Function pointer type 
 */
 typedef struct {
     gchar word[MAX_WORD_LEN];   /**< \brief Key used for Dictionary lookup */
-    gshort immediate;           /**< \brief 1 if should be executed during compilation; 0 otherwise */
+    gboolean immediate;         /**< \brief 1 if should be executed during compilation; 0 otherwise */
+    gboolean complete;          /**< \brief 1 if completely defined; 0 if being defined */
     GSequence *params;          /**< \brief Sequence of Param objects */
     routine_ptr routine;        /**< \brief Code to be run when Entry is executed */
 } Entry;

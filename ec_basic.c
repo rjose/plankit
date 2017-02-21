@@ -239,6 +239,7 @@ void EC_define(gpointer gp_entry) {
     // Create new entry
     Token token = get_token();
     Entry *entry_new = add_entry(token.word);
+    entry_new->complete = 0;
     entry_new->routine = EC_execute;
 
     _mode = 'C';
@@ -260,6 +261,7 @@ void EC_pop_return_stack(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 void EC_end_define(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
+    entry_latest->complete = 1;
     Param *pseudo_param = new_pseudo_entry_param(";", EC_pop_return_stack);
     add_entry_param(entry_latest, pseudo_param);
 

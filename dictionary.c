@@ -24,7 +24,7 @@ and moving backwards.
 Entry* find_entry(const gchar* word) {
     for (GList* l=g_list_last(_dictionary); l != NULL; l = l->prev) {
         Entry *entry = l->data;
-        if (g_strcmp0(word, entry->word) == 0) return entry;
+        if (entry->complete && g_strcmp0(word, entry->word) == 0) return entry;
     }
     return NULL;
 }

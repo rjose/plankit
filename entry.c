@@ -110,6 +110,7 @@ can be considered managed by that entry.
 Entry *new_entry() {
     Entry *result = g_new(Entry, 1);
     result->immediate = 0;
+    result->complete = 1;
     result->params = g_sequence_new(free_param);
     return result;
 }

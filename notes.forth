@@ -10,7 +10,7 @@ lex-notes
 
 : chunk  chunk-notes print ;
 
-: q  notes-close .q ;
+: .q  notes-close .q ;
 
 notes-open
 

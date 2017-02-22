@@ -17,7 +17,9 @@ See \ref param_types "Param types" for a description of each type of parameter.
 // -----------------------------------------------------------------------------
 Param *new_param() {
     Param *result = g_new(Param, 1);
+    result->type = '?';
     result->val_string = NULL;
+    result->val_custom = NULL;
     return result;
 }
 

@@ -1,4 +1,9 @@
 /** \file ext_notes.c
+
+The associated schema of a notes.db is this:
+
+- CREATE TABLE notes(type TEXT, id INTEGER PRIMARY KEY, note TEXT, timestamp TEXT, date TEXT);
+
 */
 
 #define MAX_TIMESTAMP_LEN 48
@@ -238,7 +243,7 @@ static void write_elapsed_minutes(gchar *dst, gint64 len, Note *note_l, Note *no
 */
 // -----------------------------------------------------------------------------
 static void EC_today_notes(gpointer gp_entry) {
-    GSequence *records = select_notes("where date = date('now')");
+    GSequence *records = select_notes("where date = date('now', 'localtime')");
     Param *param_new = new_custom_param(records, "GSequence of Note");
     push_param(param_new);
 }
@@ -260,12 +265,27 @@ static Note *get_latest_S_note() {
 }
 
 
+static Note *get_latest_SE_note() {
+    GSequence *records = select_notes("where type = 'S' or type = 'E' order by id desc limit 1");
+
+    Note *result = NULL;
+    if (g_sequence_get_length(records) == 1) {
+        result = copy_note(g_sequence_get(g_sequence_get_begin_iter(records)));
+    }
+
+    // Cleanup
+    g_sequence_free(records);
+
+    return result;
+}
+
+
 // -----------------------------------------------------------------------------
 /** Prints the elapsed time since the last 'S' note.
 */
 // -----------------------------------------------------------------------------
 static void EC_time(gpointer gp_entry) {
-    Note *note = get_latest_S_note();
+    Note *note = get_latest_SE_note();
 
     if (!note) {
         printf("? min\n");

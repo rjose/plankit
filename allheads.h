@@ -79,3 +79,4 @@ typedef struct {
 #include "ec_basic.h"
 #include "ext_notes.h"
 #include "ext_sqlite.h"
+#include "ext_tasks.h"

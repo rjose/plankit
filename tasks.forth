@@ -20,9 +20,11 @@ lex-tasks
 : ?   [cur-task] print ;
 : l   siblings print ;
 : w   ancestors print ;
+: sub   children print ;
 : x   1 set-is-done ;
 : /x  0 set-is-done ;
 : todo    all incomplete print ;
+: l1    level-1 incomplete print ;
 
 : .q   reset close-db .q ;
 

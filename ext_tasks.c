@@ -149,31 +149,16 @@ static void set_cur_task(Task *task) {
 }
 
 
-// -----------------------------------------------------------------------------
-/** Adds a new task as a sibling of cur-task.
-
-If _cur_task is NULL, this adds a child task of NULL.
-
-*/
-// -----------------------------------------------------------------------------
-static void EC_add_task(gpointer gp_entry) {
+static void add_task(const gchar *name, gint64 parent_id) {
     gchar parent_id_str[MAX_ID_LEN];
     gchar child_id_str[MAX_ID_LEN];
 
-    Task *cur_task = get_cur_task();
-    gint64 parent_id = 0;
-    if (cur_task) {
-        parent_id = cur_task->parent_id;
-    }
-
-    // Get the task name and create a new task
-    Param *param_task_name = pop_param();
     char* error_message = NULL;
     sqlite3 *connection = get_db_connection();
 
     // Insert new task
     gchar *sql = g_strconcat("insert into tasks(name, is_done) ",
-                             "values('", param_task_name->val_string, "', 0)", NULL);
+                             "values('", name, "', 0)", NULL);
     sqlite3_exec(connection, sql, NULL, NULL, &error_message);
     g_free(sql);
 
@@ -200,6 +185,42 @@ static void EC_add_task(gpointer gp_entry) {
     }
 
 done:
+    return;
+}
+
+
+// -----------------------------------------------------------------------------
+/** Adds a new task as a sibling of cur-task.
+
+If _cur_task is NULL, this adds a child task of NULL.
+
+*/
+// -----------------------------------------------------------------------------
+static void EC_add_task(gpointer gp_entry) {
+    Task *cur_task = get_cur_task();
+    gint64 parent_id = 0;
+    if (cur_task) {
+        parent_id = cur_task->parent_id;
+    }
+
+    // Get the task name and create a new task
+    Param *param_task_name = pop_param();
+    add_task(param_task_name->val_string, parent_id);
+
+    free_param(param_task_name);
+}
+
+
+
+static void EC_add_subtask(gpointer gp_entry) {
+    Task *cur_task = get_cur_task();
+    gint64 parent_id = 0;
+    if (cur_task) {
+        parent_id = cur_task->id;
+    }
+
+    Param *param_task_name = pop_param();
+    add_task(param_task_name->val_string, parent_id);
 
     free_param(param_task_name);
 }
@@ -212,7 +233,7 @@ static void EC_down(gpointer gp_entry) {
 
     gint64 parent_id = 0;
     if (cur_task) {
-        parent_id = cur_task->parent_id;
+        parent_id = cur_task->id;
     }
 
     gchar parent_id_str[MAX_ID_LEN];
@@ -417,6 +438,27 @@ static void EC_ancestors(gpointer gp_entry) {
 }
 
 
+static void EC_children(gpointer gp_entry) {
+    gchar parent_id_str[MAX_ID_LEN];
+
+    Task *cur_task = get_cur_task();
+    snprintf(parent_id_str, MAX_ID_LEN, "%ld", cur_task->id);
+    gchar *sql_condition = g_strconcat("where pc.parent=", parent_id_str, " order by id asc", NULL);
+    GSequence *seq = select_tasks(sql_condition);
+    g_free(sql_condition);
+
+    Param *param_new = new_custom_param(seq, "[children]");
+    push_param(param_new);
+}
+
+
+static void EC_level_1(gpointer gp_entry) {
+    GSequence *seq = select_tasks("where pc.parent=0 order by id asc");
+    Param *param_new = new_custom_param(seq, "[level-1]");
+    push_param(param_new);
+}
+
+
 // -----------------------------------------------------------------------------
 /** Sets cur_task to be done/not done
 */
@@ -471,15 +513,24 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     set_cur_task(NULL);
 
     add_entry("+")->routine = EC_add_task;
+    add_entry("++")->routine = EC_add_subtask;
+
     add_entry("d")->routine = EC_down;
     add_entry("u")->routine = EC_up;
     add_entry("g")->routine = EC_go;
+
     add_entry("set-is-done")->routine = EC_set_is_done;
+
     add_entry("[cur-task]")->routine = EC_seq_cur_task;
+
     add_entry("all")->routine = EC_all;
-    add_entry("incomplete")->routine = EC_incomplete;
     add_entry("siblings")->routine = EC_siblings;
     add_entry("ancestors")->routine = EC_ancestors;
+    add_entry("children")->routine = EC_children;
+    add_entry("level-1")->routine = EC_level_1;
+
+    add_entry("incomplete")->routine = EC_incomplete;
+
     add_entry("print")->routine = EC_print;
     add_entry("reset")->routine = EC_reset;
 }

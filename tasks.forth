@@ -20,6 +20,8 @@ lex-tasks
 : ?   [cur-task] print ;
 : l   siblings print ;
 : w   ancestors print ;
+: x   1 set-is-done ;
+: /x  0 set-is-done ;
 : .q   reset close-db .q ;
 
 

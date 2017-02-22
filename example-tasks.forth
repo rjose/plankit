@@ -10,21 +10,29 @@
 : w ancestors print ;
 
 10 g  # make Task 10 the cur-task
+u   # Goes up to the parent task
+d   # Goes to first child task, if exits
 
+0 set-is-complete
+x  # Mark cur task as complete
+/x  # Mark cur task as incomplete
+
+# -------------------------------
 
 all incomplete print   # Prints all incomplete tasks
 
 siblings incomplete print  # Prints all incomplete siblings of cur task
 
-u   # Goes up to the parent task
-d   # Goes to first child task, if exits
-
-10 x  # Mark Task 10 as complete. This also adds a note saying that Task 10 is done
-
-"This is an interesting problem" note    # Makes a generic note and connects the task to that note
 
 
+# Add ability to log a note against a task
+"This is an interesting problem" N
+"This is an interesting problem" S
+"This is an interesting problem" M
+"This is an interesting problem" E
 
+
+# -------------------------------
 
 # Dependencies
 10 12 ->   # Task 10 depends on Task 12. This adds a note.

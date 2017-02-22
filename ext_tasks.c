@@ -210,7 +210,6 @@ done:
 static void EC_down(gpointer gp_entry) {
     Task *cur_task = get_cur_task();
 
-    // If cur_task is the root task, then just return
     gint64 parent_id = 0;
     if (cur_task) {
         parent_id = cur_task->parent_id;
@@ -231,6 +230,17 @@ static void EC_down(gpointer gp_entry) {
 
 done:
     g_sequence_free(records);
+}
+
+
+static void EC_up(gpointer gp_entry) {
+    Task *cur_task = get_cur_task();
+
+    if (!cur_task) return;
+
+    Param *param_int = new_int_param(cur_task->parent_id);
+    push_param(param_int);
+    find_and_execute("g");
 }
 
 
@@ -369,6 +379,39 @@ static void EC_ancestors(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Sets cur_task to be done/not done
+*/
+// -----------------------------------------------------------------------------
+static void EC_set_is_done(gpointer gp_entry) {
+    Task *cur_task = get_cur_task();
+
+    if (!cur_task) return;
+
+
+    Param *param_bool = pop_param();
+
+    cur_task->is_done = param_bool->val_int;
+    free_param(param_bool);
+
+    gchar id_str[MAX_ID_LEN];
+    snprintf(id_str, MAX_ID_LEN, "%ld", cur_task->id);
+    sqlite3 *connection = get_db_connection();
+    gchar *sql = g_strconcat("update tasks set is_done=", cur_task->is_done ? "1" : "0", " ",
+                             "where id=", id_str,
+                             NULL);
+
+    char *error_message = NULL;
+    sqlite3_exec(connection, sql, NULL, NULL, &error_message);
+    g_free(sql);
+
+    if (error_message) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Problem executing 'set-is-done'\n----->%s", error_message);
+    }
+}
+
+
 static void EC_reset(gpointer gp_entry) {
     set_cur_task(NULL);
 }
@@ -391,7 +434,9 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
 
     add_entry("+")->routine = EC_add_task;
     add_entry("d")->routine = EC_down;
+    add_entry("u")->routine = EC_up;
     add_entry("g")->routine = EC_go;
+    add_entry("set-is-done")->routine = EC_set_is_done;
     add_entry("[cur-task]")->routine = EC_seq_cur_task;
     add_entry("siblings")->routine = EC_siblings;
     add_entry("ancestors")->routine = EC_ancestors;

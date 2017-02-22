@@ -5,9 +5,10 @@
 
 : ? [cur-task] print ;
 
+: l siblings print ;
+
 : w ancestors print ;
 
-: l siblings print ;
 
 all incomplete print   # Prints all incomplete tasks
 

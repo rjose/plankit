@@ -5,6 +5,7 @@
 
 void EC_quit(gpointer gp_entry);
 void EC_interactive(gpointer gp_entry);
+void EC_pop_and_print(gpointer gp_entry);
 
 void EC_constant(gpointer gp_entry);
 void EC_variable(gpointer gp_entry);

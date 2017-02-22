@@ -59,6 +59,8 @@ void EC_interactive(gpointer gp_entry) {
     yyrestart(stdin);
 }
 
+
+
 // -----------------------------------------------------------------------------
 /** Creates a new constant entry.
 
@@ -457,3 +459,8 @@ void EC_execute(gpointer gp_entry) {
 }
 
 
+void EC_pop_and_print(gpointer gp_entry) {
+    Param *param = pop_param();
+    print_param(param, stdout, "");
+    free_param(param);
+}

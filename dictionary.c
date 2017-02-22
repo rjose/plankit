@@ -68,6 +68,7 @@ void build_dictionary() {
 
     add_entry(".q")->routine = EC_quit;
     add_entry(".i")->routine = EC_interactive;
+    add_entry(".")->routine = EC_pop_and_print;
 
     add_entry("constant")->routine = EC_constant;
     add_entry("variable")->routine = EC_variable;

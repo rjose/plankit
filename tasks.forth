@@ -1,5 +1,8 @@
 # App for creating tasks
 
+"task" constant app-name
+: app   app-name . ;
+
 lex-tasks
 
 ## Opens database connections

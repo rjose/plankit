@@ -234,12 +234,40 @@ done:
 }
 
 
+static void EC_go(gpointer gp_entry) {
+    Param *param_id = pop_param();
+    gchar id_str[MAX_ID_LEN];
+
+    // Handle the root task
+    if (param_id->val_int == 0) {
+        set_cur_task(NULL);
+        goto done;
+    }
+
+    snprintf(id_str, MAX_ID_LEN, "%ld", param_id->val_int);
+    gchar *sql_condition = g_strconcat("where id=", id_str, NULL);
+    GSequence *records = select_tasks(sql_condition);
+    g_free(sql_condition);
+    if (g_sequence_get_length(records) != 1) {
+        fprintf(stderr, "Unknown task id: %ld\n", param_id->val_int);
+        goto done;
+    }
+
+    Task *task = copy_task(g_sequence_get(g_sequence_get_begin_iter(records)));
+    g_sequence_free(records);
+    set_cur_task(task);
+
+done:
+    free_param(param_id);
+}
+
+
 static void print_task(gpointer gp_task, gpointer gp_cur_task) {
     Task *task = gp_task;
     Task *cur_task = gp_cur_task;
 
     if (!task) {
-        printf("   %c0: Root task\n", !cur_task ? '*' : ' ');
+        printf("    %c0: Root task\n", !cur_task ? '*' : ' ');
     }
     else {
         printf("[%c] %c%ld: %s\n", task->is_done ? 'X' : ' ',
@@ -310,6 +338,37 @@ static void EC_siblings(gpointer gp_entry) {
 }
 
 
+static void EC_ancestors(gpointer gp_entry) {
+    GSequence *seq = g_sequence_new(g_free);
+    gchar parent_id_str[MAX_ID_LEN];
+
+    Task *cur_task = copy_task(get_cur_task());
+    while (cur_task) {
+        g_sequence_prepend(seq, cur_task);
+
+        // If parent is root...
+        if (!cur_task->parent_id) {
+            cur_task = NULL;
+            continue;
+        }
+
+        //...otherwise, look up parent
+        snprintf(parent_id_str, MAX_ID_LEN, "%ld", cur_task->parent_id);
+        gchar *sql_condition = g_strconcat("where id=", parent_id_str, NULL);
+        GSequence *records = select_tasks(sql_condition);
+        g_free(sql_condition);
+        cur_task = copy_task(g_sequence_get(g_sequence_get_begin_iter(records)));
+
+        g_sequence_free(records);
+    }
+
+    g_sequence_prepend(seq, cur_task);
+
+    Param *param_new = new_custom_param(seq, "[ancestors]");
+    push_param(param_new);
+}
+
+
 static void EC_reset(gpointer gp_entry) {
     set_cur_task(NULL);
 }
@@ -332,8 +391,10 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
 
     add_entry("+")->routine = EC_add_task;
     add_entry("d")->routine = EC_down;
+    add_entry("g")->routine = EC_go;
     add_entry("[cur-task]")->routine = EC_seq_cur_task;
     add_entry("siblings")->routine = EC_siblings;
+    add_entry("ancestors")->routine = EC_ancestors;
     add_entry("print")->routine = EC_print;
     add_entry("reset")->routine = EC_reset;
 }

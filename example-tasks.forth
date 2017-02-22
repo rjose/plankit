@@ -9,6 +9,8 @@
 
 : w ancestors print ;
 
+10 g  # make Task 10 the cur-task
+
 
 all incomplete print   # Prints all incomplete tasks
 
@@ -17,7 +19,6 @@ siblings incomplete print  # Prints all incomplete siblings of cur task
 u   # Goes up to the parent task
 d   # Goes to first child task, if exits
 
-10 g  # make Task 10 the cur-task
 10 x  # Mark Task 10 as complete. This also adds a note saying that Task 10 is done
 
 "This is an interesting problem" note    # Makes a generic note and connects the task to that note

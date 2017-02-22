@@ -17,7 +17,9 @@ lex-tasks
     notes-db @  sqlite3-close
 ;
 
-: ? [cur-task] print ;
+: ?   [cur-task] print ;
+
+: l   siblings print ;
 
 : .q   reset close-db .q ;
 

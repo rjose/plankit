@@ -234,13 +234,18 @@ done:
 }
 
 
-static void print_task(gpointer gp_task, gpointer unused) {
+static void print_task(gpointer gp_task, gpointer gp_cur_task) {
     Task *task = gp_task;
+    Task *cur_task = gp_cur_task;
+
     if (!task) {
-        printf("    0: Root task\n");
+        printf("   %c0: Root task\n", !cur_task ? '*' : ' ');
     }
     else {
-        printf("[%c] %ld: %s\n", task->is_done ? 'X' : ' ', task->id, task->name);
+        printf("[%c] %c%ld: %s\n", task->is_done ? 'X' : ' ',
+                                   cur_task && cur_task->id == task->id ? '*' : ' ',
+                                   task->id,
+                                   task->name);
     }
 }
 
@@ -250,10 +255,11 @@ static void print_task(gpointer gp_task, gpointer unused) {
 This also frees the memory associated with the GSequence.
 */
 static void EC_print(gpointer gp_entry) {
+    Task *cur_task = get_cur_task();
     Param *param_seq = pop_param();
     GSequence *seq = param_seq->val_custom;
 
-    g_sequence_foreach(seq, print_task, NULL);
+    g_sequence_foreach(seq, print_task, cur_task);
     printf("\n");
 
     g_sequence_free(seq);
@@ -276,6 +282,34 @@ static void EC_seq_cur_task(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pushes a seq of the siblings of the current task (including the task)
+
+\note Whoever pops this off the stack is responsible for freeing it.
+*/
+// -----------------------------------------------------------------------------
+static void EC_siblings(gpointer gp_entry) {
+    Task *cur_task = get_cur_task();
+    GSequence *seq = NULL;
+
+    if (!cur_task) {
+        seq = g_sequence_new(g_free);
+        g_sequence_append(seq, cur_task);
+    }
+    else {
+        gchar parent_id_str[MAX_ID_LEN];
+        snprintf(parent_id_str, MAX_ID_LEN, "%ld", cur_task->parent_id);
+
+        gchar *sql_condition = g_strconcat("where pc.parent=", parent_id_str, " order by id asc", NULL);
+        seq = select_tasks(sql_condition);
+        g_free(sql_condition);
+    }
+
+    Param *param_new = new_custom_param(seq, "[siblings]");
+    push_param(param_new);
+}
+
+
 static void EC_reset(gpointer gp_entry) {
     set_cur_task(NULL);
 }
@@ -291,12 +325,15 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     find_and_execute("lex-notes");  // This also includes lex-sqlite
 
     add_variable("tasks-db");
+
+    // Holds the current task
     add_variable("*cur-task");
     set_cur_task(NULL);
 
     add_entry("+")->routine = EC_add_task;
     add_entry("d")->routine = EC_down;
     add_entry("[cur-task]")->routine = EC_seq_cur_task;
+    add_entry("siblings")->routine = EC_siblings;
     add_entry("print")->routine = EC_print;
     add_entry("reset")->routine = EC_reset;
 }

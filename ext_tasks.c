@@ -348,6 +348,44 @@ static void EC_siblings(gpointer gp_entry) {
 }
 
 
+
+static void EC_all(gpointer gp_entry) {
+    GSequence *records = select_tasks("");
+    Param *param_new = new_custom_param(records, "[all]");
+    push_param(param_new);
+}
+
+
+// -----------------------------------------------------------------------------
+/** Pops a GSequence of Task and selects only those tasks that are incomplete
+    and pushes this new sequence back onto the stack
+*/
+// -----------------------------------------------------------------------------
+static void EC_incomplete(gpointer gp_entry) {
+    // Pop sequence
+    Param *param_seq = pop_param();
+    GSequence *seq = param_seq->val_custom;
+
+    // Gather incomplete tasks
+    GSequence *incomplete = g_sequence_new(g_free);
+    GSequenceIter *iter = g_sequence_get_begin_iter(seq);
+    while (!g_sequence_iter_is_end(iter)) {
+        Task *task = g_sequence_get(iter);
+
+        if (!task->is_done) {
+            g_sequence_append(incomplete, copy_task(task));
+        }
+        iter = g_sequence_iter_next(iter);
+    }
+    g_sequence_free(seq);
+    free_param(param_seq);
+
+    // Push incomplete Tasks
+    Param *param_new = new_custom_param(incomplete, "[incomplete]");
+    push_param(param_new);
+}
+
+
 static void EC_ancestors(gpointer gp_entry) {
     GSequence *seq = g_sequence_new(g_free);
     gchar parent_id_str[MAX_ID_LEN];
@@ -438,6 +476,8 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("g")->routine = EC_go;
     add_entry("set-is-done")->routine = EC_set_is_done;
     add_entry("[cur-task]")->routine = EC_seq_cur_task;
+    add_entry("all")->routine = EC_all;
+    add_entry("incomplete")->routine = EC_incomplete;
     add_entry("siblings")->routine = EC_siblings;
     add_entry("ancestors")->routine = EC_ancestors;
     add_entry("print")->routine = EC_print;

@@ -22,6 +22,8 @@ lex-tasks
 : w   ancestors print ;
 : x   1 set-is-done ;
 : /x  0 set-is-done ;
+: todo    all incomplete print ;
+
 : .q   reset close-db .q ;
 
 

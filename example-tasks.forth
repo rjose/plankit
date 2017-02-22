@@ -17,13 +17,13 @@ d   # Goes to first child task, if exits
 x  # Mark cur task as complete
 /x  # Mark cur task as incomplete
 
-# -------------------------------
 
 all incomplete print   # Prints all incomplete tasks
 
 siblings incomplete print  # Prints all incomplete siblings of cur task
 
-
+# -------------------------------
+"Subtask" ++
 
 # Add ability to log a note against a task
 "This is an interesting problem" N

@@ -360,22 +360,22 @@ static void EC_print(gpointer gp_entry) {
 
         switch(note->type) {
             case 'N':
-                printf("%s\n%s\n\n", note->timestamp_text, note->note);
+                printf("%s - %ld\n%s\n\n", note->timestamp_text, note->id, note->note);
                 break;
 
             case 'S':
                 current_start_note = note;
-                printf("\n>> %s\n%s\n\n", note->timestamp_text, note->note);
+                printf("\n>> %s - %ld\n%s\n\n", note->timestamp_text, note->id, note->note);
                 break;
 
             case 'M':
                 write_elapsed_minutes(elapsed_min_text, MAX_ELAPSED_LEN, note, current_start_note);
-                printf("(%s min) %s\n%s\n\n", elapsed_min_text, note->timestamp_text, note->note);
+                printf("(%s min) %s - %ld\n%s\n\n", elapsed_min_text, note->timestamp_text, note->id, note->note);
                 break;
 
             case 'E':
                 write_elapsed_minutes(elapsed_min_text, MAX_ELAPSED_LEN, note, current_start_note);
-                printf("<< (%s min) %s\n%s\n\n", elapsed_min_text, note->timestamp_text, note->note);
+                printf("<< (%s min) %s - %ld\n%s\n\n", elapsed_min_text, note->timestamp_text, note->id, note->note);
                 current_start_note = NULL;
                 break;
 

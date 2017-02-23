@@ -1,4 +1,7 @@
 /** \file ext_sqlite.c
+
+\brief Lexicon for interacting with sqlite3
+
 */
 
 // -----------------------------------------------------------------------------
@@ -70,6 +73,7 @@ The following words are defined:
 
 - sqlite3-open: (db-name -- db-connection) Opens a connection to a database
 - sqlite3-close: (db-connection -- ) Closes a connection to a database
+- sqlite3-last-id: (-- id) Pushes most recent row ID
 
 */
 // -----------------------------------------------------------------------------

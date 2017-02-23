@@ -1,5 +1,7 @@
 /** \file ext_notes.c
 
+\brief Lexicon for notes
+
 The associated schema of a notes.db is this:
 
 - CREATE TABLE notes(type TEXT, id INTEGER PRIMARY KEY, note TEXT, timestamp TEXT, date TEXT);
@@ -48,6 +50,10 @@ static Note *new_note(gint64 id, gchar type, const gchar *note, const gchar *tim
 }
 
 
+// -----------------------------------------------------------------------------
+/** Creates a new copy of a note
+*/
+// -----------------------------------------------------------------------------
 static Note *copy_note(Note *src) {
     Note *result = new_note(src->id, src->type, src->note, src->timestamp_text, src->date_text);
     return result;
@@ -251,6 +257,10 @@ static void EC_today_notes(gpointer gp_entry) {
 
 
 
+// -----------------------------------------------------------------------------
+/** Returns the most recent Note with type 'S'
+*/
+// -----------------------------------------------------------------------------
 static Note *get_latest_S_note() {
     GSequence *records = select_notes("where type = 'S' order by id desc limit 1");
 
@@ -266,6 +276,10 @@ static Note *get_latest_S_note() {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Returns most recent note with type 'S' or 'E'.
+*/
+// -----------------------------------------------------------------------------
 static Note *get_latest_SE_note() {
     GSequence *records = select_notes("where type = 'S' or type = 'E' order by id desc limit 1");
 
@@ -302,6 +316,10 @@ static void EC_time(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pushes GSequence of notes onto the stack
+*/
+// -----------------------------------------------------------------------------
 static void EC_chunk_notes(gpointer gp_entry) {
     GSequence *records = NULL;
     const int CONDITION_LEN = 128;
@@ -323,6 +341,10 @@ static void EC_chunk_notes(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pops a GSequence of Notes and prints it
+*/
+// -----------------------------------------------------------------------------
 static void EC_print(gpointer gp_entry) {
     // Pop Note sequence
     Param *param_note_sequence = pop_param();
@@ -438,11 +460,19 @@ done:
 
 The following words are defined for manipulating notes:
 
-- S: Creates a note that starts a work chunk
-- M: Creates a note in the middle of a work chunk
-- E: Creates a note that ends a work chunk
-- N: Creates a generic note
-- time: Prints the elapsed time since the last start note
+- notes-db: This holds the sqlite database connection for notes
+
+- S: (string -- ) Creates a note that starts a work chunk
+- M: (string -- ) Creates a note in the middle of a work chunk
+- E: (string -- ) Creates a note that ends a work chunk
+- N: (string -- ) Creates a generic note
+
+- time: ( -- ) Prints the elapsed time since the last start or end note
+
+- today-notes: ( -- [notes from today])
+- chunk-notes: ( -- [notes from current chunk])
+- print-notes: ([notes] -- ) Prints notes
+- note_ids-to-notes: (Array[note ids] -- [notes])
 
 */
 // -----------------------------------------------------------------------------

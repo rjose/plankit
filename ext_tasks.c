@@ -1,13 +1,24 @@
 /** \file ext_tasks.c
 
-The associated schema of a tasks.db is this:
+\brief Lexicon for tasks
+
+The schema of the tasks.db is:
 
 - CREATE TABLE tasks(is_done INTEGER, id INTEGER PRIMARY KEY, name TEXT);
 - CREATE TABLE parent_child(parent INTEGER, child INTEGER);
 - CREATE TABLE task_notes(task INTEGER, note INTEGER);
 
+
+The *cur-task variable refers to the current task. This is an implicit
+argument for many of the words in the lexicon. It may be NULL if the
+current task is the root task.
+
 \note You shouldn't set *cur-task directly since its memory management is handled
-      by the lexicon.
+      by the lexicon (via set_cur_task). Also, the only function that should
+      free memory involving *cur-task is set_cur_task.
+
+A convention throughout is that if a word pushes a sequence or array onto the
+stack, it is the responsibility of the caller to free that memory.
 
 */
 
@@ -26,6 +37,10 @@ typedef struct {
 } Task;
 
 
+// -----------------------------------------------------------------------------
+/** Creates a new Task
+*/
+// -----------------------------------------------------------------------------
 static Task *new_task(gint64 id, gint64 parent_id, const gchar* name, gboolean is_done) {
     Task *result = g_new(Task, 1);
 
@@ -38,6 +53,10 @@ static Task *new_task(gint64 id, gint64 parent_id, const gchar* name, gboolean i
 }
 
 
+// -----------------------------------------------------------------------------
+/** Creates a new copy of a Task.
+*/
+// -----------------------------------------------------------------------------
 static Task *copy_task(Task *src) {
     if (!src) return NULL;
 
@@ -47,11 +66,13 @@ static Task *copy_task(Task *src) {
 }
 
 
+// -----------------------------------------------------------------------------
 /** Returns a pointer to cur-task
 
 \note This shouldn't be freed by the caller. The memory is freed when a new
       cur-task is set via set_cur_task.
 */
+// -----------------------------------------------------------------------------
 static Task *get_cur_task() {
     find_and_execute("*cur-task");
     find_and_execute("@");
@@ -63,6 +84,14 @@ static Task *get_cur_task() {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Sets the '*cur-task' variable.
+
+The old version of *cur-task is freed during this call (this is the only place
+where the cur-task gets freed).
+
+*/
+// -----------------------------------------------------------------------------
 static void set_cur_task(Task *task) {
     Task *cur_task = get_cur_task();
     g_free(cur_task);
@@ -74,6 +103,10 @@ static void set_cur_task(Task *task) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Returns the ID of the *cur-task
+*/
+// -----------------------------------------------------------------------------
 static gint64 get_cur_task_id() {
     Task *cur_task = get_cur_task();
     gint64 result = 0;
@@ -86,7 +119,7 @@ static gint64 get_cur_task_id() {
 
 
 // -----------------------------------------------------------------------------
-/** Gets a database connection from the "notes-db" variable.
+/** Gets a database connection from the "tasks-db" variable.
 */
 // -----------------------------------------------------------------------------
 static sqlite3 *get_db_connection() {
@@ -161,6 +194,11 @@ static GSequence *select_tasks(const gchar *sql_conditions) {
 
 
 
+// -----------------------------------------------------------------------------
+/** Adds a task to the tasks-db
+
+*/
+// -----------------------------------------------------------------------------
 static void add_task(const gchar *name, gint64 parent_id) {
     gchar parent_id_str[MAX_ID_LEN];
     gchar child_id_str[MAX_ID_LEN];
@@ -224,6 +262,10 @@ static void EC_add_task(gpointer gp_entry) {
 
 
 
+// -----------------------------------------------------------------------------
+/** Pops a task name and uses it to make a subtask of *cur-task.
+*/
+// -----------------------------------------------------------------------------
 static void EC_add_subtask(gpointer gp_entry) {
     gint64 parent_id = get_cur_task_id();
     Param *param_task_name = pop_param();
@@ -235,6 +277,10 @@ static void EC_add_subtask(gpointer gp_entry) {
 
 
 
+// -----------------------------------------------------------------------------
+/** Sets *cur-task to be the first child of the previous *cur-task.
+*/
+// -----------------------------------------------------------------------------
 static void EC_down(gpointer gp_entry) {
     gint64 parent_id = get_cur_task_id();
     gchar parent_id_str[MAX_ID_LEN];
@@ -255,6 +301,10 @@ done:
 }
 
 
+// -----------------------------------------------------------------------------
+/** Sets *cur-task to be the parent of the previous *cur-task
+*/
+// -----------------------------------------------------------------------------
 static void EC_up(gpointer gp_entry) {
     Task *cur_task = get_cur_task();
 
@@ -266,6 +316,10 @@ static void EC_up(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Sets *cur-task to be the Task with the ID popped from the stack
+*/
+// -----------------------------------------------------------------------------
 static void EC_go(gpointer gp_entry) {
     Param *param_id = pop_param();
     gchar id_str[MAX_ID_LEN];
@@ -310,10 +364,12 @@ static void print_task(gpointer gp_task, gpointer gp_cur_task) {
 }
 
 
+// -----------------------------------------------------------------------------
 /** Prints a GSequence of Task
 
 This also frees the memory associated with the GSequence.
 */
+// -----------------------------------------------------------------------------
 static void EC_print(gpointer gp_entry) {
     Task *cur_task = get_cur_task();
     Param *param_seq = pop_param();
@@ -329,6 +385,9 @@ static void EC_print(gpointer gp_entry) {
 
 // -----------------------------------------------------------------------------
 /** Pushes copy of cur-task onto the stack as a seq
+
+This allows functions that operate on sequences of Tasks to work on the
+current task.
 */
 // -----------------------------------------------------------------------------
 static void EC_seq_cur_task(gpointer gp_entry) {
@@ -371,6 +430,10 @@ static void EC_siblings(gpointer gp_entry) {
 
 
 
+// -----------------------------------------------------------------------------
+/** Pushes a sequence of all tasks onto the stack
+*/
+// -----------------------------------------------------------------------------
 static void EC_all(gpointer gp_entry) {
     GSequence *records = select_tasks("");
     Param *param_new = new_custom_param(records, "[all]");
@@ -381,6 +444,9 @@ static void EC_all(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 /** Pops a GSequence of Task and selects only those tasks that are incomplete
     and pushes this new sequence back onto the stack
+
+This is essentially applies a filter to a sequence of tasks to return only
+those which are incomplete.
 */
 // -----------------------------------------------------------------------------
 static void EC_incomplete(gpointer gp_entry) {
@@ -408,6 +474,10 @@ static void EC_incomplete(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pushes a sequence of all ancestors of *cur-task onto the stack.
+*/
+// -----------------------------------------------------------------------------
 static void EC_ancestors(gpointer gp_entry) {
     GSequence *seq = g_sequence_new(g_free);
     gchar parent_id_str[MAX_ID_LEN];
@@ -439,6 +509,10 @@ static void EC_ancestors(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pushes a sequence of all children of *cur-task onto the stack
+*/
+// -----------------------------------------------------------------------------
 static void EC_children(gpointer gp_entry) {
     gchar parent_id_str[MAX_ID_LEN];
 
@@ -454,6 +528,10 @@ static void EC_children(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pushes a sequence of all children of the root task onto the stack.
+*/
+// -----------------------------------------------------------------------------
 static void EC_level_1(gpointer gp_entry) {
     GSequence *seq = select_tasks("where pc.parent=0 order by id asc");
     Param *param_new = new_custom_param(seq, "[level-1]");
@@ -524,6 +602,11 @@ static void EC_link_note(gpointer gp_entry) {
     }
 }
 
+
+// -----------------------------------------------------------------------------
+/** Callback to append a note ID onto an array.
+*/
+// -----------------------------------------------------------------------------
 static int append_note_id_cb(gpointer gp_note_ids, int num_cols, char **values, char **cols) {
     GArray *note_ids = gp_note_ids;
 
@@ -567,6 +650,10 @@ static void EC_task_note_ids(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Sets *cur-task to NULL, effectively freeing its memory.
+*/
+// -----------------------------------------------------------------------------
 static void EC_reset(gpointer gp_entry) {
     set_cur_task(NULL);
 }
@@ -574,6 +661,37 @@ static void EC_reset(gpointer gp_entry) {
 
 // -----------------------------------------------------------------------------
 /** Defines the tasks lexicon and adds it to the dictionary.
+
+The following words are defined for manipulating Tasks:
+
+- tasks-db: This holds the sqlite database connection for tasks
+
+- +: (string -- ) Creates a task that's the sibling of *cur-task (or a child if *cur-task is root)
+- ++: (string -- ) Creates a subtask of *cur-task
+
+- d ( -- ) Makes the first child of *cur-task the new *cur-task
+- u ( -- ) Makes the parent of *cur-task the new *cur-task
+- g (id -- ) Makes the Task with id the new *cur-task
+
+- set-is-done (bool -- ) Marks *cur-task as done/not done
+
+- [cur-task] ( -- [*cur-task]) Pushes *cur-task onto the stack as a sequence
+
+- all ( -- [tasks]) Pushes a sequence of all Tasks onto the stack
+- siblings ( -- [tasks]) Pushes a sequence of all siblings of the *cur-task onto the stack
+- ancestors ( -- [tasks]) Pushes a sequence of all ancestors of the *cur-task onto the stack
+- children ( -- [tasks]) Pushes a sequence of all children of the *cur-task onto the stack
+- level-1 ( -- [tasks]) Pushes a sequence of all children of the root task onto the stack
+
+- task-note-ids ( -- [note ids]) Pushes an array of note ids linked to *cur-task
+
+- incomplete ([tasks] -- [tasks]) Selects only the incomplete tasks
+
+- link-note ( note-id -- )  Links the note with id note-id to *cur-task
+
+- print-tasks ( [tasks] -- )  Prints a sequence of tasks
+
+- reset ( -- )  Sets *cur-task to root
 
 */
 // -----------------------------------------------------------------------------

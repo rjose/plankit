@@ -458,7 +458,13 @@ void EC_execute(gpointer gp_entry) {
     }
 }
 
+// -----------------------------------------------------------------------------
+/** Pops a parameter and prints it.
 
+( param -- )
+
+*/
+// -----------------------------------------------------------------------------
 void EC_pop_and_print(gpointer gp_entry) {
     Param *param = pop_param();
     print_param(param, stdout, "");

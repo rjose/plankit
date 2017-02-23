@@ -69,7 +69,6 @@ typedef struct {
 
 
 
-#include "error.h"
 #include "globals.h"
 #include "param.h"
 #include "entry.h"

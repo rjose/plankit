@@ -28,3 +28,7 @@ void use_unused() {
     input();
     yyunput(0, NULL);
 }
+
+extern int yywrap() {
+    return 1;
+}

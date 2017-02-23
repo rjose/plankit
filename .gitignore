@@ -6,7 +6,7 @@ plankit
 *.gz
 *.o
 lex.*
-main
+kit
 html/*
 latex/*
 *.core

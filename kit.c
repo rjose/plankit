@@ -1,5 +1,5 @@
 // =============================================================================
-/** \file
+/** \file kit.c
 
 \brief Defines main function and control loop.
 

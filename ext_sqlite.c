@@ -44,6 +44,23 @@ static void EC_sqlite3_close(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pops a database connection, gets the last inserted row ID, and pushes it onto the stack
+*/
+// -----------------------------------------------------------------------------
+static void EC_sqlite3_last_id(gpointer gp_entry) {
+    Param *param_connection = pop_param();
+    sqlite3 *connection = param_connection->val_custom;
+
+    gint64 id = sqlite3_last_insert_rowid(connection);
+
+    Param *param_new = new_int_param(id);
+    push_param(param_new);
+
+    free_param(param_connection);
+}
+
+
 
 // -----------------------------------------------------------------------------
 /** Defines sqlite3 lexicon and adds it to the dictionary.
@@ -57,6 +74,7 @@ The following words are defined:
 */
 // -----------------------------------------------------------------------------
 void EC_add_sqlite_lexicon(gpointer gp_entry) {
-    add_entry("sqlite3-open")->routine = EC_sqlite3_open; 
-    add_entry("sqlite3-close")->routine = EC_sqlite3_close; 
+    add_entry("sqlite3-open")->routine = EC_sqlite3_open;
+    add_entry("sqlite3-close")->routine = EC_sqlite3_close;
+    add_entry("sqlite3-last-id")->routine = EC_sqlite3_last_id;
 }

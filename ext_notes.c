@@ -396,5 +396,5 @@ void EC_add_notes_lexicon(gpointer gp_entry) {
     add_entry("time")->routine = EC_time;
     add_entry("today-notes")->routine = EC_today_notes;
     add_entry("chunk-notes")->routine = EC_chunk_notes;
-    add_entry("print")->routine = EC_print;
+    add_entry("print-notes")->routine = EC_print;
 }

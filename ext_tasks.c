@@ -4,6 +4,7 @@ The associated schema of a tasks.db is this:
 
 - CREATE TABLE tasks(is_done INTEGER, id INTEGER PRIMARY KEY, name TEXT);
 - CREATE TABLE parent_child(parent INTEGER, child INTEGER);
+- CREATE TABLE task_notes(task INTEGER, note INTEGER);
 
 \note You shouldn't set *cur-task directly since its memory management is handled
       by the lexicon.
@@ -42,6 +43,43 @@ static Task *copy_task(Task *src) {
 
     Task *result = g_new(Task, 1);
     *result = *src;
+    return result;
+}
+
+
+/** Returns a pointer to cur-task
+
+\note This shouldn't be freed by the caller. The memory is freed when a new
+      cur-task is set via set_cur_task.
+*/
+static Task *get_cur_task() {
+    find_and_execute("*cur-task");
+    find_and_execute("@");
+    Param *param_task = pop_param();
+    Task *result = param_task->val_custom;
+
+    free_param(param_task);
+    return result;
+}
+
+
+static void set_cur_task(Task *task) {
+    Task *cur_task = get_cur_task();
+    g_free(cur_task);
+
+    Param *param_new = new_custom_param(task, "Task");
+    push_param(param_new);
+    find_and_execute("*cur-task");
+    find_and_execute("!");
+}
+
+
+static gint64 get_cur_task_id() {
+    Task *cur_task = get_cur_task();
+    gint64 result = 0;
+    if (cur_task) {
+        result = cur_task->id;
+    }
     return result;
 }
 
@@ -122,32 +160,6 @@ static GSequence *select_tasks(const gchar *sql_conditions) {
 }
 
 
-/** Returns a pointer to cur-task
-
-\note This shouldn't be freed by the caller. The memory is freed when a new
-      cur-task is set via set_cur_task.
-*/
-static Task *get_cur_task() {
-    find_and_execute("*cur-task");
-    find_and_execute("@");
-    Param *param_task = pop_param();
-    Task *result = param_task->val_custom;
-
-    free_param(param_task);
-    return result;
-}
-
-
-static void set_cur_task(Task *task) {
-    Task *cur_task = get_cur_task();
-    g_free(cur_task);
-
-    Param *param_new = new_custom_param(task, "Task");
-    push_param(param_new);
-    find_and_execute("*cur-task");
-    find_and_execute("!");
-}
-
 
 static void add_task(const gchar *name, gint64 parent_id) {
     gchar parent_id_str[MAX_ID_LEN];
@@ -213,12 +225,7 @@ static void EC_add_task(gpointer gp_entry) {
 
 
 static void EC_add_subtask(gpointer gp_entry) {
-    Task *cur_task = get_cur_task();
-    gint64 parent_id = 0;
-    if (cur_task) {
-        parent_id = cur_task->id;
-    }
-
+    gint64 parent_id = get_cur_task_id();
     Param *param_task_name = pop_param();
     add_task(param_task_name->val_string, parent_id);
 
@@ -229,13 +236,7 @@ static void EC_add_subtask(gpointer gp_entry) {
 
 
 static void EC_down(gpointer gp_entry) {
-    Task *cur_task = get_cur_task();
-
-    gint64 parent_id = 0;
-    if (cur_task) {
-        parent_id = cur_task->id;
-    }
-
+    gint64 parent_id = get_cur_task_id();
     gchar parent_id_str[MAX_ID_LEN];
     snprintf(parent_id_str, MAX_ID_LEN, "%ld", parent_id);
 
@@ -441,8 +442,9 @@ static void EC_ancestors(gpointer gp_entry) {
 static void EC_children(gpointer gp_entry) {
     gchar parent_id_str[MAX_ID_LEN];
 
-    Task *cur_task = get_cur_task();
-    snprintf(parent_id_str, MAX_ID_LEN, "%ld", cur_task->id);
+    gint64 parent_id = get_cur_task_id();
+    snprintf(parent_id_str, MAX_ID_LEN, "%ld", parent_id);
+
     gchar *sql_condition = g_strconcat("where pc.parent=", parent_id_str, " order by id asc", NULL);
     GSequence *seq = select_tasks(sql_condition);
     g_free(sql_condition);
@@ -492,6 +494,79 @@ static void EC_set_is_done(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Pops a note id and links the current task to it.
+*/
+// -----------------------------------------------------------------------------
+static void EC_link_note(gpointer gp_entry) {
+    gint64 task_id = get_cur_task_id();
+
+    Param *param_id = pop_param();
+    gint64 note_id = param_id->val_int;
+    free_param(param_id);
+
+    gchar task_id_str[MAX_ID_LEN];
+    gchar note_id_str[MAX_ID_LEN];
+
+    snprintf(task_id_str, MAX_ID_LEN, "%ld", task_id);
+    snprintf(note_id_str, MAX_ID_LEN, "%ld", note_id);
+    gchar *sql = g_strconcat("insert into task_notes(task, note) ",
+                             "values(", task_id_str, ", ", note_id_str, ")", NULL);
+
+    char *error_message = NULL;
+    sqlite3 *connection = get_db_connection();
+    sqlite3_exec(connection, sql, NULL, NULL, &error_message);
+    g_free(sql);
+
+    if (error_message) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Problem executing 'link-note'\n----->%s", error_message);
+    }
+}
+
+static int append_note_id_cb(gpointer gp_note_ids, int num_cols, char **values, char **cols) {
+    GArray *note_ids = gp_note_ids;
+
+    if (num_cols != 1) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Unexpected num cols from task_notes query\n");
+        return 1;
+    }
+
+    gint64 id = g_ascii_strtoll(values[0], NULL, 10);
+
+    g_array_append_val(note_ids, id);
+    return 0;
+}
+
+
+// -----------------------------------------------------------------------------
+/** Looks up all the notes associated with a task and pushes a GSequence of their
+    ids onto the stack.
+*/
+// -----------------------------------------------------------------------------
+static void EC_task_notes(gpointer gp_entry) {
+    gint64 task_id = get_cur_task_id();
+    gchar id_str[MAX_ID_LEN];
+    snprintf(id_str, MAX_ID_LEN, "%ld", task_id);
+    gchar *sql = g_strconcat("select note from task_notes where task=", id_str, " order by note asc ", NULL);
+
+    char *error_message = NULL;
+    GArray *note_ids = g_array_new(FALSE, TRUE, sizeof(gint64));
+    sqlite3 *connection = get_db_connection();
+    sqlite3_exec(connection, sql, append_note_id_cb, note_ids, &error_message);
+    g_free(sql);
+
+    if (error_message) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Problem executing 'task_notes'\n----->%s", error_message);
+    }
+
+    Param *param_new = new_custom_param(note_ids, "Array[note_ids]");
+    push_param(param_new);
+}
+
+
 static void EC_reset(gpointer gp_entry) {
     set_cur_task(NULL);
 }
@@ -529,8 +604,12 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("children")->routine = EC_children;
     add_entry("level-1")->routine = EC_level_1;
 
+    add_entry("task-notes")->routine = EC_task_notes;
+
     add_entry("incomplete")->routine = EC_incomplete;
 
-    add_entry("print")->routine = EC_print;
+    add_entry("link-note")->routine = EC_link_note;
+
+    add_entry("print-tasks")->routine = EC_print;
     add_entry("reset")->routine = EC_reset;
 }

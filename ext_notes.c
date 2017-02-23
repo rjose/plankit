@@ -8,6 +8,7 @@ The associated schema of a notes.db is this:
 
 #define MAX_TIMESTAMP_LEN 48
 #define MAX_ELAPSED_LEN 16
+#define MAX_ID_LEN 16
 #define NOTE_FIELDS   "id, type, note, timestamp, date from notes "
 
 // -----------------------------------------------------------------------------
@@ -371,6 +372,68 @@ static void EC_print(gpointer gp_entry) {
 
 
 // -----------------------------------------------------------------------------
+/** Pops an Array of int note IDs from the stack and converts them into Notes.
+
+We want to convert the Array of gint64 into a string like this: "(1,2,3,4)". If
+we assume the maximum number of digits for each ID is MAX_ID_LEN, then the size of this
+string should be:
+
+    MAX_ID_LEN*n +   # digits
+    (n-1) +  # commas
+    2        # parens
+    1        # NUL
+
+We'll allocate a string, start at the beginning, and snprintf the numbers into
+it as we go along. We'll put parens and commas as needed and then end with the NUL.
+When this works, we should move it into the sqlite lexicon.
+*/
+// -----------------------------------------------------------------------------
+static void EC_note_ids_to_notes(gpointer gp_entry) {
+    Param *param_note_ids = pop_param();
+    GArray *note_ids = param_note_ids->val_custom;
+
+    GSequence *notes = NULL;
+    if (note_ids->len == 0) {
+        notes = g_sequence_new(free_note);
+        goto done;
+    }
+
+    guint num_bytes = MAX_ID_LEN*note_ids->len + (note_ids->len - 1) + 2 + 1;
+    gchar *id_list = g_malloc0(num_bytes);
+    guint cur_pos = 0;
+
+    // Build up list
+    id_list[cur_pos++] = '(';
+    for (guint i=0; i < note_ids->len; i++) {
+       gint64 note_id = g_array_index(note_ids, gint64, i);
+       guint num_digits = snprintf(id_list + cur_pos, MAX_ID_LEN, "%ld", note_id);
+       cur_pos += num_digits;
+       id_list[cur_pos++] = ',';
+    }
+
+    // Change the last ',' to a closing paren
+    id_list[cur_pos-1] = ')';
+    id_list[cur_pos++] = 0;
+
+
+    // Select notes
+    gchar *sql_condition = g_strconcat("where id in ", id_list, NULL);
+    notes = select_notes(sql_condition);
+    g_free(sql_condition);
+    g_free(id_list);
+
+    Param *param_new = NULL;
+
+done:
+    param_new = new_custom_param(notes, "[notes]");
+    push_param(param_new);
+
+    g_array_free(note_ids, TRUE);
+    free_param(param_note_ids);
+}
+
+
+// -----------------------------------------------------------------------------
 /** Defines the notes lexicon and adds it to the dictionary.
 
 The following words are defined for manipulating notes:
@@ -397,4 +460,5 @@ void EC_add_notes_lexicon(gpointer gp_entry) {
     add_entry("today-notes")->routine = EC_today_notes;
     add_entry("chunk-notes")->routine = EC_chunk_notes;
     add_entry("print-notes")->routine = EC_print;
+    add_entry("note_ids-to-notes")->routine = EC_note_ids_to_notes;
 }

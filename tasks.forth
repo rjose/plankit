@@ -17,6 +17,10 @@ lex-tasks
     notes-db @  sqlite3-close
 ;
 
+: c  chunk-notes print-notes ;
+: today  today-notes print-notes ;
+: t  time ;
+
 : ?   [cur-task] print-tasks ;
 : l   siblings print-tasks ;
 : w   ancestors print-tasks ;
@@ -26,7 +30,18 @@ lex-tasks
 : todo    all incomplete print-tasks ;
 : l1    level-1 incomplete print-tasks ;
 
+: notes
+       task-note_ids
+       note_ids-to-notes
+       print-notes
+;
+
 : .q   reset close-db .q ;
+
+: n    N ;
+: s    S ;
+: m    M ;
+: e    E ;
 
 : N    N
        notes-db @ sqlite3-last-id

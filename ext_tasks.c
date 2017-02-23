@@ -541,11 +541,11 @@ static int append_note_id_cb(gpointer gp_note_ids, int num_cols, char **values, 
 
 
 // -----------------------------------------------------------------------------
-/** Looks up all the notes associated with a task and pushes a GSequence of their
+/** Looks up all the notes associated with a task and pushes a GArray of their
     ids onto the stack.
 */
 // -----------------------------------------------------------------------------
-static void EC_task_notes(gpointer gp_entry) {
+static void EC_task_note_ids(gpointer gp_entry) {
     gint64 task_id = get_cur_task_id();
     gchar id_str[MAX_ID_LEN];
     snprintf(id_str, MAX_ID_LEN, "%ld", task_id);
@@ -559,7 +559,7 @@ static void EC_task_notes(gpointer gp_entry) {
 
     if (error_message) {
         handle_error(ERR_GENERIC_ERROR);
-        fprintf(stderr, "-----> Problem executing 'task_notes'\n----->%s", error_message);
+        fprintf(stderr, "-----> Problem executing 'task_note_ids'\n----->%s", error_message);
     }
 
     Param *param_new = new_custom_param(note_ids, "Array[note_ids]");
@@ -604,7 +604,7 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("children")->routine = EC_children;
     add_entry("level-1")->routine = EC_level_1;
 
-    add_entry("task-notes")->routine = EC_task_notes;
+    add_entry("task-note_ids")->routine = EC_task_note_ids;
 
     add_entry("incomplete")->routine = EC_incomplete;
 

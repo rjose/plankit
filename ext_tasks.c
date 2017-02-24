@@ -531,6 +531,24 @@ static void EC_level_1(gpointer gp_entry) {
 
 
 // -----------------------------------------------------------------------------
+/** Pushes a sequence of tasks matching a string.
+*/
+// -----------------------------------------------------------------------------
+static void EC_search(gpointer gp_entry) {
+    Param *param_search = pop_param();
+
+    gchar *sql_condition = g_strconcat("where name like \"%", param_search->val_string, "%\"", NULL);
+    GSequence *seq = select_tasks(sql_condition);
+    g_free(sql_condition);
+    free_param(param_search);
+
+    Param *param_new = new_custom_param(seq, "[search:tasks]");
+    push_param(param_new);
+}
+
+
+
+// -----------------------------------------------------------------------------
 /** Pops a note id and links the current task to it.
 
 TODO: See if we can do this in Forth
@@ -738,6 +756,7 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("ancestors")->routine = EC_ancestors;
     add_entry("children")->routine = EC_children;
     add_entry("level-1")->routine = EC_level_1;
+    add_entry("search")->routine = EC_search;
 
     add_entry("task-note_ids")->routine = EC_task_note_ids;
 

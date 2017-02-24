@@ -82,6 +82,11 @@ lex-tasks
         "task_value" descending
         print-tasks ;
 
+## (str -- tasks)
+: /     search
+        "task_value" descending
+        print-tasks ;
+
 : refresh-cur-task  *cur-task @ task_id g ;
 
 ## Marks current task as done
@@ -107,6 +112,8 @@ lex-tasks
           "task_value" descending
           print-tasks
           ;
+
+: to      todo ;
 
 
 ## Lists all incomplete top level tasks

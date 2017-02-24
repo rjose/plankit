@@ -24,6 +24,7 @@ stack, it is the responsibility of the caller to free that memory.
 
 #define MAX_NAME_LEN   256
 #define MAX_ID_LEN   16
+#define MAX_DOUBLE_LEN   6
 
 // -----------------------------------------------------------------------------
 /** Represents a note from a database record
@@ -564,6 +565,47 @@ static void EC_set_is_done(gpointer gp_entry) {
 
 
 // -----------------------------------------------------------------------------
+/** Sets value of the specified task
+*/
+// -----------------------------------------------------------------------------
+static void EC_set_value(gpointer gp_entry) {
+    Param *param_value = pop_param();
+    Param *param_task_id = pop_param();
+
+    double value = 0.0;
+    if (param_value->type == 'I') {
+        value = param_value->val_int;
+    }
+    if (param_value->type == 'D') {
+        value = param_value->val_double;
+    }
+    free_param(param_value);
+
+    gint64 task_id = param_task_id->val_int;
+    free_param(param_task_id);
+
+    gchar id_str[MAX_ID_LEN];
+    gchar value_str[MAX_DOUBLE_LEN];
+    snprintf(id_str, MAX_ID_LEN, "%ld", task_id);
+    snprintf(value_str, MAX_DOUBLE_LEN, "%.1lf", value);
+
+    sqlite3 *connection = get_db_connection();
+    gchar *sql = g_strconcat("update tasks set value=", value_str, " ",
+                             "where id=", id_str,
+                             NULL);
+
+    char *error_message = NULL;
+    sqlite3_exec(connection, sql, NULL, NULL, &error_message);
+    g_free(sql);
+
+    if (error_message) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Problem executing 'set-value'\n----->%s", error_message);
+    }
+}
+
+
+// -----------------------------------------------------------------------------
 /** Pops a note id and links the current task to it.
 */
 // -----------------------------------------------------------------------------
@@ -664,7 +706,7 @@ The following words are defined for manipulating Tasks:
 - u ( -- ) Makes the parent of *cur-task the new *cur-task
 - g (id -- ) Makes the Task with id the new *cur-task
 
-- set-is-done (bool -- ) Marks *cur-task as done/not done
+- is-done! (bool -- ) Marks *cur-task as done/not done
 
 - [cur-task] ( -- [*cur-task]) Pushes *cur-task onto the stack as a sequence
 
@@ -703,7 +745,8 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("u")->routine = EC_up;
     add_entry("g")->routine = EC_go;
 
-    add_entry("set-is-done")->routine = EC_set_is_done;
+    add_entry("is-done!")->routine = EC_set_is_done;
+    add_entry("value!")->routine = EC_set_value;
 
     add_entry("[cur-task]")->routine = EC_seq_cur_task;
 

@@ -75,13 +75,13 @@ lex-tasks
 
 ## Marks current task as done
 : x
-    1 set-is-done
+    1 is-done!
     "Marking task complete" N
 ;
 
 ## Marks current task as not done
 : /x
-    0 set-is-done
+    0 is-done!
     "Marking task incomplete" N
 ;
 

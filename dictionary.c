@@ -53,17 +53,6 @@ static void hook_up_extensions() {
 }
 
 
-static void EC_negate(gpointer gp_entry) {
-    Param *param_value = pop_param();
-    if (param_value->type == 'I') {
-        param_value->val_int *= -1;
-    }
-    else if (param_value->type == 'D') {
-        param_value->val_double *= -1.0;
-    }
-    push_param(param_value);
-}
-
 
 // -----------------------------------------------------------------------------
 /** Builds the dictionary for the interpreter.
@@ -77,40 +66,7 @@ that we can control the extensions dynamically.
 */
 // -----------------------------------------------------------------------------
 void build_dictionary() {
-    Entry *entry;
-
-    add_entry(".q")->routine = EC_quit;
-    add_entry(".i")->routine = EC_interactive;
-    add_entry(".")->routine = EC_pop_and_print;
-    add_entry("pop")->routine = EC_pop;
-
-    add_entry("constant")->routine = EC_constant;
-    add_entry("variable")->routine = EC_variable;
-    add_entry(".s")->routine = EC_print_stack;
-    add_entry(":")->routine = EC_define;
-
-    add_entry("negate")->routine = EC_negate;
-
-    entry = add_entry(";");
-    entry->immediate = 1;
-    entry->routine = EC_end_define;
-
-    add_entry(".d")->routine = EC_print_definition;
-    add_entry("!")->routine = EC_store_variable_value;
-    add_entry("@")->routine = EC_fetch_variable_value;
-
-    entry = add_entry("if");
-    entry->immediate = 1;
-    entry->routine = EC_if;
-
-    entry = add_entry("then");
-    entry->immediate = 1;
-    entry->routine = EC_then;
-
-    entry = add_entry("else");
-    entry->immediate = 1;
-    entry->routine = EC_else;
-
+    add_basic_words();
     hook_up_extensions();
 }
 

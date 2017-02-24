@@ -3,41 +3,15 @@
 
 #pragma once
 
-void EC_quit(gpointer gp_entry);
-void EC_interactive(gpointer gp_entry);
-void EC_pop_and_print(gpointer gp_entry);
-void EC_pop(gpointer gp_entry);
-
-void EC_constant(gpointer gp_entry);
-void EC_variable(gpointer gp_entry);
-
-void EC_store_variable_value(gpointer gp_entry);
-void EC_fetch_variable_value(gpointer gp_entry);
-
-void EC_push_entry_address(gpointer gp_entry);
-void EC_push_param0(gpointer gp_entry);
-
-void EC_print_stack(gpointer gp_entry);
-void EC_print_definition(gpointer gp_entry);
-
-void EC_if(gpointer gp_entry);
-void EC_then(gpointer gp_entry);
-void EC_else(gpointer gp_entry);
-
-void EC_jmp_if_false(gpointer gp_entry);
-void EC_jmp(gpointer gp_entry);
-
-void EC_define(gpointer gp_entry);
-void EC_execute(gpointer gp_entry);
-void EC_end_define(gpointer gp_entry);
+void add_basic_words();
 
 void add_variable(const gchar *word);
 void find_and_execute(const gchar *word);
 
-
 int set_double_cb(gpointer gp_double_ref, int num_cols, char **values, char **cols);
 int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **cols);
 
+void EC_push_param0(gpointer gp_entry);
 
 
 #define EC_DB_STR_SETTER(_ec_func_name_, _word_, _db_table_name_, _field_name_) \

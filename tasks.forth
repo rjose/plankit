@@ -64,8 +64,13 @@ lex-tasks
 ## Prints the current task
 : ?   [cur-task] print-tasks ;
 
-## Prints siblings of the current task
-: l     siblings
+## Prints incomplete siblings of the current task
+: l     siblings incomplete
+        "task_value" descending
+        print-tasks ;
+
+## Prints all siblings of the current task
+: la     siblings
         "task_value" descending
         print-tasks ;
 

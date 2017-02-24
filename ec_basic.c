@@ -7,6 +7,11 @@ routines used when defining entries dynamically.
 
 */
 
+static void EC_execute(gpointer gp_entry);
+static void EC_jmp(gpointer gp_entry);
+static void EC_jmp_if_false(gpointer gp_entry);
+static void EC_push_entry_address(gpointer gp_entry);
+
 
 // -----------------------------------------------------------------------------
 /** Convenience function to add a variable entry to the dictionary.
@@ -41,7 +46,7 @@ void find_and_execute(const gchar *word) {
 /** Sets the _quit flag so the main control loop stops.
 */
 // -----------------------------------------------------------------------------
-void EC_quit(gpointer gp_entry) {
+static void EC_quit(gpointer gp_entry) {
     _quit = 1;
 }
 
@@ -55,7 +60,7 @@ void EC_quit(gpointer gp_entry) {
 
 */
 // -----------------------------------------------------------------------------
-void EC_interactive(gpointer gp_entry) {
+static void EC_interactive(gpointer gp_entry) {
     yyrestart(stdin);
 }
 
@@ -72,7 +77,7 @@ routine for the new constant pushes this value onto the stack.
 
 */
 // -----------------------------------------------------------------------------
-void EC_constant(gpointer gp_entry) {
+static void EC_constant(gpointer gp_entry) {
     Token token = get_token();
     Param *param0 = pop_param();
 
@@ -97,7 +102,7 @@ entry onto the stack.
 
 */
 // -----------------------------------------------------------------------------
-void EC_variable(gpointer gp_entry) {
+static void EC_variable(gpointer gp_entry) {
     Token token = get_token();
     add_variable(token.word);
 }
@@ -109,7 +114,7 @@ void EC_variable(gpointer gp_entry) {
 \param gp_entry: unused
 */
 // -----------------------------------------------------------------------------
-void EC_store_variable_value(gpointer gp_entry) {
+static void EC_store_variable_value(gpointer gp_entry) {
     Param *p_var = pop_param();    // Variable to store value in
     if (!p_var) {
         handle_error(ERR_STACK_UNDERFLOW);
@@ -147,7 +152,7 @@ void EC_store_variable_value(gpointer gp_entry) {
 \param gp_entry: unused
 */
 // -----------------------------------------------------------------------------
-void EC_fetch_variable_value(gpointer gp_entry) {
+static void EC_fetch_variable_value(gpointer gp_entry) {
     Param *p_var = pop_param();
 
     Entry *entry_var = p_var->val_entry;
@@ -186,7 +191,7 @@ void EC_push_param0(gpointer gp_entry) {
 \param gp_entry: The entry with the parameter to be pushed.
 */
 // -----------------------------------------------------------------------------
-void EC_push_entry_address(gpointer gp_entry) {
+static void EC_push_entry_address(gpointer gp_entry) {
     Entry *entry = gp_entry;
     Param *param = new_entry_param(entry);
     push_param(param);
@@ -204,7 +209,7 @@ static void gfunc_print_param(gpointer gp_param, gpointer user_data) {
 
 */
 // -----------------------------------------------------------------------------
-void EC_print_stack(gpointer gp_entry) {
+static void EC_print_stack(gpointer gp_entry) {
     // NOTE: We're assuming that this goes from the first element to the last
     g_queue_foreach(_stack, gfunc_print_param, NULL);
     printf("\n");
@@ -237,7 +242,7 @@ allowing this to be dynamically specified, we change the behavior of defined
 words.
 */
 // -----------------------------------------------------------------------------
-void EC_define(gpointer gp_entry) {
+static void EC_define(gpointer gp_entry) {
     // Create new entry
     Token token = get_token();
     Entry *entry_new = add_entry(token.word);
@@ -252,7 +257,7 @@ void EC_define(gpointer gp_entry) {
 /** Pops return stack and stores in _ip.
 */
 // -----------------------------------------------------------------------------
-void EC_pop_return_stack(gpointer gp_entry) {
+static void EC_pop_return_stack(gpointer gp_entry) {
     _ip = pop_param_r();
 }
 
@@ -261,7 +266,7 @@ void EC_pop_return_stack(gpointer gp_entry) {
 /** Marks the end of the definition and returns interpreter to 'E'xecute mode.
 */
 // -----------------------------------------------------------------------------
-void EC_end_define(gpointer gp_entry) {
+static void EC_end_define(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
     entry_latest->complete = 1;
     Param *pseudo_param = new_pseudo_entry_param(";", EC_pop_return_stack);
@@ -282,7 +287,7 @@ know, at this time of the compilation, where to jump to, we push the pseudo entr
 onto the stack to be filled out later by an "else" or a "then" word.
 */
 // -----------------------------------------------------------------------------
-void EC_if(gpointer gp_entry) {
+static void EC_if(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
     Param *pseudo_param = new_pseudo_entry_param("jmp-if-false", EC_jmp_if_false);
     add_entry_param(entry_latest, pseudo_param);
@@ -306,7 +311,7 @@ jmp must be added to the definition first. Similar to the "if" jmp, we
 will need to fill out the jmp target later, so we push it onto the stack.
 */
 // -----------------------------------------------------------------------------
-void EC_else(gpointer gp_entry) {
+static void EC_else(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
 
     // Pop param so we can fill out the target for the jmp
@@ -333,7 +338,7 @@ void EC_else(gpointer gp_entry) {
 This pops a "pseudo entry" and sets its jmp target to be the next instruction.
 */
 // -----------------------------------------------------------------------------
-void EC_then(gpointer gp_entry) {
+static void EC_then(gpointer gp_entry) {
     Entry *entry_latest = latest_entry();
 
     // Pop param so we can fill out the target for the jmp
@@ -354,7 +359,7 @@ the instruction at the offset specified in its first param.
 
 */
 // -----------------------------------------------------------------------------
-void EC_jmp_if_false(gpointer gp_entry) {
+static void EC_jmp_if_false(gpointer gp_entry) {
     Entry *entry = gp_entry;
 
     Param *param_bool = pop_param();
@@ -380,7 +385,7 @@ This sets the instruction pointer to the offset specified in the entry's
 first param.
 */
 // -----------------------------------------------------------------------------
-void EC_jmp(gpointer gp_entry) {
+static void EC_jmp(gpointer gp_entry) {
     Entry *entry = gp_entry;
 
     // Get first param of entry
@@ -397,7 +402,7 @@ void EC_jmp(gpointer gp_entry) {
 /** Prints the words in an Entry definition.
 */
 // -----------------------------------------------------------------------------
-void EC_print_definition(gpointer gp_entry) {
+static void EC_print_definition(gpointer gp_entry) {
     Token token = get_token();
     Entry *entry = find_entry(token.word);
     if (!entry) {
@@ -427,7 +432,7 @@ function, which will result in the return stack noting the place to return
 once that execution is complete.
 */
 // -----------------------------------------------------------------------------
-void EC_execute(gpointer gp_entry) {
+static void EC_execute(gpointer gp_entry) {
     Entry *entry = gp_entry;
     Param *cur_param;
     Entry *pseudo_entry;
@@ -465,7 +470,7 @@ void EC_execute(gpointer gp_entry) {
 
 */
 // -----------------------------------------------------------------------------
-void EC_pop_and_print(gpointer gp_entry) {
+static void EC_pop_and_print(gpointer gp_entry) {
     Param *param = pop_param();
     print_param(param, stdout, "");
     free_param(param);
@@ -479,7 +484,7 @@ void EC_pop_and_print(gpointer gp_entry) {
 
 */
 // -----------------------------------------------------------------------------
-void EC_pop(gpointer gp_entry) {
+static void EC_pop(gpointer gp_entry) {
     Param *param = pop_param();
     free_param(param);
 }
@@ -513,4 +518,53 @@ int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **co
 
     *char_p_ref = g_strdup(values[0]);
     return 0;
+}
+
+static void EC_negate(gpointer gp_entry) {
+    Param *param_value = pop_param();
+    if (param_value->type == 'I') {
+        param_value->val_int *= -1;
+    }
+    else if (param_value->type == 'D') {
+        param_value->val_double *= -1.0;
+    }
+    push_param(param_value);
+}
+
+
+void add_basic_words() {
+    Entry *entry;
+
+    add_entry(".q")->routine = EC_quit;
+    add_entry(".i")->routine = EC_interactive;
+    add_entry(".")->routine = EC_pop_and_print;
+    add_entry("pop")->routine = EC_pop;
+
+    add_entry("constant")->routine = EC_constant;
+    add_entry("variable")->routine = EC_variable;
+    add_entry(".s")->routine = EC_print_stack;
+    add_entry(":")->routine = EC_define;
+
+    add_entry("negate")->routine = EC_negate;
+
+    entry = add_entry(";");
+    entry->immediate = 1;
+    entry->routine = EC_end_define;
+
+    add_entry(".d")->routine = EC_print_definition;
+    add_entry("!")->routine = EC_store_variable_value;
+    add_entry("@")->routine = EC_fetch_variable_value;
+
+    entry = add_entry("if");
+    entry->immediate = 1;
+    entry->routine = EC_if;
+
+    entry = add_entry("then");
+    entry->immediate = 1;
+    entry->routine = EC_then;
+
+    entry = add_entry("else");
+    entry->immediate = 1;
+    entry->routine = EC_else;
+
 }

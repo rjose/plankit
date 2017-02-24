@@ -207,6 +207,8 @@ void print_param(Param *param, FILE *file, const gchar *prefix) {
 /** Frees memory for a param.
 
 \param gp_param: Pointer to a Param to free.
+
+\note This function does *not* free custom data.
 */
 // -----------------------------------------------------------------------------
 void free_param(gpointer gp_param) {

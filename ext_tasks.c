@@ -24,6 +24,7 @@ stack, it is the responsibility of the caller to free that memory.
 
 #define MAX_NAME_LEN   256
 #define MAX_ID_LEN   16
+#define MAX_INT_LEN   24
 #define MAX_DOUBLE_LEN   6
 
 // -----------------------------------------------------------------------------
@@ -531,82 +532,24 @@ static void EC_level_1(gpointer gp_entry) {
 }
 
 
-// -----------------------------------------------------------------------------
-/** Sets cur_task to be done/not done
-*/
-// -----------------------------------------------------------------------------
-static void EC_set_is_done(gpointer gp_entry) {
-    Task *cur_task = get_cur_task();
+EC_OBJ_FIELD_GETTER(EC_get_task_is_done, Task, new_int_param(obj->is_done))
+EC_OBJ_FIELD_GETTER(EC_get_task_id, Task, new_int_param(obj->id))
 
-    if (!cur_task) return;
+EC_DB_DOUBLE_SETTER(EC_set_value, "value!", "tasks", "value")
+EC_DB_DOUBLE_GETTER(EC_get_value, "value", "tasks", "value")
 
+EC_DB_INT_SETTER(EC_set_is_done, "is-done!", "tasks", "is_done")
+EC_DB_INT_GETTER(EC_get_is_done, "is-done", "tasks", "is_done")
 
-    Param *param_bool = pop_param();
+EC_DB_STR_SETTER(EC_set_name, "name!", "tasks", "name")
+EC_DB_STR_GETTER(EC_get_name, "name", "tasks", "name")
 
-    cur_task->is_done = param_bool->val_int;
-    free_param(param_bool);
-
-    gchar id_str[MAX_ID_LEN];
-    snprintf(id_str, MAX_ID_LEN, "%ld", cur_task->id);
-    sqlite3 *connection = get_db_connection();
-    gchar *sql = g_strconcat("update tasks set is_done=", cur_task->is_done ? "1" : "0", " ",
-                             "where id=", id_str,
-                             NULL);
-
-    char *error_message = NULL;
-    sqlite3_exec(connection, sql, NULL, NULL, &error_message);
-    g_free(sql);
-
-    if (error_message) {
-        handle_error(ERR_GENERIC_ERROR);
-        fprintf(stderr, "-----> Problem executing 'set-is-done'\n----->%s", error_message);
-    }
-}
-
-
-// -----------------------------------------------------------------------------
-/** Sets value of the specified task
-*/
-// -----------------------------------------------------------------------------
-static void EC_set_value(gpointer gp_entry) {
-    Param *param_value = pop_param();
-    Param *param_task_id = pop_param();
-
-    double value = 0.0;
-    if (param_value->type == 'I') {
-        value = param_value->val_int;
-    }
-    if (param_value->type == 'D') {
-        value = param_value->val_double;
-    }
-    free_param(param_value);
-
-    gint64 task_id = param_task_id->val_int;
-    free_param(param_task_id);
-
-    gchar id_str[MAX_ID_LEN];
-    gchar value_str[MAX_DOUBLE_LEN];
-    snprintf(id_str, MAX_ID_LEN, "%ld", task_id);
-    snprintf(value_str, MAX_DOUBLE_LEN, "%.1lf", value);
-
-    sqlite3 *connection = get_db_connection();
-    gchar *sql = g_strconcat("update tasks set value=", value_str, " ",
-                             "where id=", id_str,
-                             NULL);
-
-    char *error_message = NULL;
-    sqlite3_exec(connection, sql, NULL, NULL, &error_message);
-    g_free(sql);
-
-    if (error_message) {
-        handle_error(ERR_GENERIC_ERROR);
-        fprintf(stderr, "-----> Problem executing 'set-value'\n----->%s", error_message);
-    }
-}
 
 
 // -----------------------------------------------------------------------------
 /** Pops a note id and links the current task to it.
+
+TODO: See if we can do this in Forth
 */
 // -----------------------------------------------------------------------------
 static void EC_link_note(gpointer gp_entry) {
@@ -745,8 +688,15 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("u")->routine = EC_up;
     add_entry("g")->routine = EC_go;
 
-    add_entry("is-done!")->routine = EC_set_is_done;
+    add_entry("task_id")->routine = EC_get_task_id;
+    add_entry("task_is-done")->routine = EC_get_task_is_done;
+
+    add_entry("value")->routine = EC_get_value;
     add_entry("value!")->routine = EC_set_value;
+    add_entry("is-done")->routine = EC_get_is_done;
+    add_entry("is-done!")->routine = EC_set_is_done;
+    add_entry("name")->routine = EC_get_name;
+    add_entry("name!")->routine = EC_set_name;
 
     add_entry("[cur-task]")->routine = EC_seq_cur_task;
 

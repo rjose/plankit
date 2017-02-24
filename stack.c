@@ -73,3 +73,13 @@ Param *pop_param() {
 
     return g_queue_pop_tail(_stack);
 }
+
+
+// -----------------------------------------------------------------------------
+/** Returns top of stack so caller can peek at it.
+
+*/
+// -----------------------------------------------------------------------------
+const Param *top() {
+    return g_queue_peek_tail(_stack);
+}

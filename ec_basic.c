@@ -470,3 +470,47 @@ void EC_pop_and_print(gpointer gp_entry) {
     print_param(param, stdout, "");
     free_param(param);
 }
+
+
+// -----------------------------------------------------------------------------
+/** Pops a parameter
+
+( param -- )
+
+*/
+// -----------------------------------------------------------------------------
+void EC_pop(gpointer gp_entry) {
+    Param *param = pop_param();
+    free_param(param);
+}
+
+
+int set_double_cb(gpointer gp_double_ref, int num_cols, char **values, char **cols) {
+    if (num_cols != 1) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Unexpected num cols in set_double_cb\n");
+        return 1;
+    }
+
+    double *double_ref = gp_double_ref;
+    *double_ref = values[0] ? g_ascii_strtod(values[0], NULL) : 0.0;
+    return 0;
+}
+
+
+/** This stores a string value from a query
+
+\note Since this allocates a new string, the caller is responsible for freeing it
+*/
+int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **cols) {
+    if (num_cols != 1) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Unexpected num cols in set_double_cb\n");
+        return 1;
+    }
+
+    gchar **char_p_ref = gp_char_p_ref;
+
+    *char_p_ref = g_strdup(values[0]);
+    return 0;
+}

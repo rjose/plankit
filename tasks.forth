@@ -75,13 +75,17 @@ lex-tasks
 
 ## Marks current task as done
 : x
-    1 is-done!
+    *cur-task @ task_id   # (task id)
+    1 is-done!            # (task)
+    pop                   # ()
     "Marking task complete" N
 ;
 
 ## Marks current task as not done
 : /x
-    0 is-done!
+    *cur-task @ task_id   # (task id)
+    0 is-done!            # (task)
+    pop                   # ()
     "Marking task incomplete" N
 ;
 

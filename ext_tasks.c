@@ -23,9 +23,6 @@ stack, it is the responsibility of the caller to free that memory.
 */
 
 #define MAX_NAME_LEN   256
-#define MAX_ID_LEN   16
-#define MAX_INT_LEN   24
-#define MAX_DOUBLE_LEN   6
 
 // -----------------------------------------------------------------------------
 /** Represents a note from a database record
@@ -347,7 +344,7 @@ static void print_task(gpointer gp_task, gpointer gp_cur_task) {
         printf("%c    0: Root task\n", !cur_task ? '*' : ' ');
     }
     else {
-        printf("%c[%c] %ld: %s (%.1lf)\n",
+        printf("%c[%c] %4ld: %s (%.1lf)\n",
                                    cur_task && cur_task->id == task->id ? '*' : ' ',
                                    task->is_done ? 'X' : ' ',
                                    task->id,
@@ -532,19 +529,6 @@ static void EC_level_1(gpointer gp_entry) {
 }
 
 
-EC_OBJ_FIELD_GETTER(EC_get_task_is_done, Task, new_int_param(obj->is_done))
-EC_OBJ_FIELD_GETTER(EC_get_task_id, Task, new_int_param(obj->id))
-
-EC_DB_DOUBLE_SETTER(EC_set_value, "value!", "tasks", "value")
-EC_DB_DOUBLE_GETTER(EC_get_value, "value", "tasks", "value")
-
-EC_DB_INT_SETTER(EC_set_is_done, "is-done!", "tasks", "is_done")
-EC_DB_INT_GETTER(EC_get_is_done, "is-done", "tasks", "is_done")
-
-EC_DB_STR_SETTER(EC_set_name, "name!", "tasks", "name")
-EC_DB_STR_GETTER(EC_get_name, "name", "tasks", "name")
-
-
 
 // -----------------------------------------------------------------------------
 /** Pops a note id and links the current task to it.
@@ -635,6 +619,22 @@ static void EC_reset(gpointer gp_entry) {
 }
 
 
+EC_OBJ_FIELD_GETTER(EC_get_task_id, Task, new_int_param(obj->id))
+EC_OBJ_FIELD_GETTER(EC_get_task_value, Task, new_double_param(obj->value))
+EC_OBJ_FIELD_GETTER(EC_get_task_is_done, Task, new_int_param(obj->is_done))
+EC_OBJ_FIELD_GETTER(EC_get_task_name, Task, new_str_param(obj->name))
+
+EC_DB_DOUBLE_SETTER(EC_set_value, "value!", "tasks", "value")
+EC_DB_DOUBLE_GETTER(EC_get_value, "value", "tasks", "value")
+
+EC_DB_INT_SETTER(EC_set_is_done, "is-done!", "tasks", "is_done")
+EC_DB_INT_GETTER(EC_get_is_done, "is-done", "tasks", "is_done")
+
+EC_DB_STR_SETTER(EC_set_name, "name!", "tasks", "name")
+EC_DB_STR_GETTER(EC_get_name, "name", "tasks", "name")
+
+
+
 // -----------------------------------------------------------------------------
 /** Defines the tasks lexicon and adds it to the dictionary.
 
@@ -673,6 +673,7 @@ The following words are defined for manipulating Tasks:
 // -----------------------------------------------------------------------------
 void EC_add_tasks_lexicon(gpointer gp_entry) {
     // Add the lexicons that this depends on
+    find_and_execute("lex-sequence");
     find_and_execute("lex-notes");  // This also includes lex-sqlite
 
     add_variable("tasks-db");
@@ -689,7 +690,9 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("g")->routine = EC_go;
 
     add_entry("task_id")->routine = EC_get_task_id;
+    add_entry("task_value")->routine = EC_get_task_value;
     add_entry("task_is-done")->routine = EC_get_task_is_done;
+    add_entry("task_name")->routine = EC_get_task_name;
 
     add_entry("value")->routine = EC_get_value;
     add_entry("value!")->routine = EC_set_value;

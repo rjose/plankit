@@ -139,6 +139,7 @@ int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **co
         } \
     }
 
+
 #define EC_DB_DOUBLE_GETTER(_ec_func_name_, _word_, _db_table_name_, _field_name_) \
     static void _ec_func_name_(gpointer gp_entry) { \
         sqlite3 *connection = get_db_connection(); \

@@ -23,6 +23,9 @@ for all files so that.
 #include <math.h>
 
 #define MAX_WORD_LEN  128       /**< \brief Longest entry word */
+#define MAX_ID_LEN   16
+#define MAX_INT_LEN   24
+#define MAX_DOUBLE_LEN   6
 
 
 typedef void (*routine_ptr)(gpointer entry);  /**< \brief Function pointer type for the routine of an Entry */
@@ -77,5 +80,6 @@ typedef struct {
 #include "return_stack.h"
 #include "ec_basic.h"
 #include "ext_notes.h"
+#include "ext_sequence.h"
 #include "ext_sqlite.h"
 #include "ext_tasks.h"

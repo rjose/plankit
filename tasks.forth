@@ -65,19 +65,26 @@ lex-tasks
 : ?   [cur-task] print-tasks ;
 
 ## Prints siblings of the current task
-: l   siblings print-tasks ;
+: l     siblings
+        "task_value" descending
+        print-tasks ;
 
 ## Prints ancestors of current task ('w'here)
 : w   ancestors print-tasks ;
 
 ## Prints children of current task
-: sub   children print-tasks ;
+: sub   children
+        "task_value" descending
+        print-tasks ;
+
+: refresh-cur-task  *cur-task @ task_id g ;
 
 ## Marks current task as done
 : x
     *cur-task @ task_id   # (task id)
     1 is-done!            # (task)
     pop                   # ()
+    refresh-cur-task
     "Marking task complete" N
 ;
 
@@ -86,14 +93,21 @@ lex-tasks
     *cur-task @ task_id   # (task id)
     0 is-done!            # (task)
     pop                   # ()
+    refresh-cur-task
     "Marking task incomplete" N
 ;
 
 ## Lists all incomplete tasks
-: todo    all incomplete print-tasks ;
+: todo    all incomplete
+          "task_value" descending
+          print-tasks
+          ;
+
 
 ## Lists all incomplete top level tasks
-: l1    level-1 incomplete print-tasks ;
+: l1    level-1 incomplete
+        "task_value" descending
+        print-tasks ;
 
 ## Prints all notes associated with a task
 : notes

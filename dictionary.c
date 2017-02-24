@@ -46,9 +46,22 @@ Entry *add_entry(const gchar *word) {
 
 
 static void hook_up_extensions() {
+    add_entry("lex-sequence")->routine = EC_add_sequence_lexicon;
     add_entry("lex-sqlite")->routine = EC_add_sqlite_lexicon;
     add_entry("lex-notes")->routine = EC_add_notes_lexicon;
     add_entry("lex-tasks")->routine = EC_add_tasks_lexicon;
+}
+
+
+static void EC_negate(gpointer gp_entry) {
+    Param *param_value = pop_param();
+    if (param_value->type == 'I') {
+        param_value->val_int *= -1;
+    }
+    else if (param_value->type == 'D') {
+        param_value->val_double *= -1.0;
+    }
+    push_param(param_value);
 }
 
 
@@ -75,6 +88,8 @@ void build_dictionary() {
     add_entry("variable")->routine = EC_variable;
     add_entry(".s")->routine = EC_print_stack;
     add_entry(":")->routine = EC_define;
+
+    add_entry("negate")->routine = EC_negate;
 
     entry = add_entry(";");
     entry->immediate = 1;

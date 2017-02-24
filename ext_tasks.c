@@ -208,7 +208,7 @@ static void add_task(const gchar *name, gint64 parent_id) {
 
     // Insert new task
     gchar *sql = g_strconcat("insert into tasks(name, is_done) ",
-                             "values('", name, "', 0)", NULL);
+                             "values(\"", name, "\", 0)", NULL);
     sqlite3_exec(connection, sql, NULL, NULL, &error_message);
     g_free(sql);
 
@@ -353,11 +353,11 @@ static void print_task(gpointer gp_task, gpointer gp_cur_task) {
     Task *cur_task = gp_cur_task;
 
     if (!task) {
-        printf("    %c0: Root task\n", !cur_task ? '*' : ' ');
+        printf("%c    0: Root task\n", !cur_task ? '*' : ' ');
     }
     else {
-        printf("[%c] %c%ld: %s\n", task->is_done ? 'X' : ' ',
-                                   cur_task && cur_task->id == task->id ? '*' : ' ',
+        printf("%c[%c] %ld: %s\n", cur_task && cur_task->id == task->id ? '*' : ' ',
+                                   task->is_done ? 'X' : ' ',
                                    task->id,
                                    task->name);
     }

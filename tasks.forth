@@ -24,7 +24,7 @@ lex-tasks
 ## Alias the note words
 : n    N ;  # Generic note
 : s    S ;  # Start of work chunk
-: m    M ;  # Middle of work chunk
+: mid    M ;  # Middle of work chunk
 : e    E ;  # End of work chunk
 
 
@@ -106,6 +106,9 @@ lex-tasks
     refresh-cur-task
     "Marking task incomplete" N
 ;
+
+
+: m    m refresh-cur-task ;
 
 ## Lists all incomplete tasks
 : todo    all incomplete

@@ -637,6 +637,39 @@ static void EC_reset(gpointer gp_entry) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Moves a task to a new parent.
+
+(child parent -- )
+
+*/
+// -----------------------------------------------------------------------------
+static void EC_move(gpointer gp_entry) {
+    Param *param_parent = pop_param();
+    Param *param_child = pop_param();
+
+    gchar parent_id_str[MAX_ID_LEN];
+    gchar child_id_str[MAX_ID_LEN];
+    snprintf(parent_id_str, MAX_ID_LEN, "%ld", param_parent->val_int);
+    snprintf(child_id_str, MAX_ID_LEN, "%ld", param_child->val_int);
+    gchar *sql = g_strconcat("update parent_child set parent=", parent_id_str, " where child=", child_id_str, NULL);
+
+    sqlite3 *connection = get_db_connection();
+    char *error_message = NULL;
+    sqlite3_exec(connection, sql, NULL, NULL, &error_message);
+    g_free(sql);
+
+    if (error_message) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Problem executing 'move'\n----->%s", error_message);
+    }
+
+    free_param(param_parent);
+    free_param(param_child);
+}
+
+
+
 EC_OBJ_FIELD_GETTER(EC_get_task_id, Task, new_int_param(obj->id))
 EC_OBJ_FIELD_GETTER(EC_get_task_value, Task, new_double_param(obj->value))
 EC_OBJ_FIELD_GETTER(EC_get_task_is_done, Task, new_int_param(obj->is_done))
@@ -748,6 +781,7 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("is-done!")->routine = EC_set_is_done;
     add_entry("name")->routine = EC_get_name;
     add_entry("name!")->routine = EC_set_name;
+    add_entry("m")->routine = EC_move;
 
     add_entry("[cur-task]")->routine = EC_seq_cur_task;
 

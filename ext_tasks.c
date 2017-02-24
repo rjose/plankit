@@ -136,7 +136,8 @@ static int append_task_cb(gpointer gp_records, int num_cols, char **values, char
     Task task = {.id = g_ascii_strtoll(values[0], NULL, 10),
                  .parent_id = g_ascii_strtoll(values[1], NULL, 10),
                  .is_done = g_ascii_strtoll(values[3], NULL, 10),
-                 .value = g_ascii_strtod(values[4], NULL)};
+                 .value = values[4] ? g_ascii_strtod(values[4], NULL) : 0.0
+                };
     g_strlcpy(task.name, values[2], MAX_NAME_LEN);
 
     Task *task_new = copy_task(&task);
@@ -344,10 +345,12 @@ static void print_task(gpointer gp_task, gpointer gp_cur_task) {
         printf("%c    0: Root task\n", !cur_task ? '*' : ' ');
     }
     else {
-        printf("%c[%c] %ld: %s\n", cur_task && cur_task->id == task->id ? '*' : ' ',
+        printf("%c[%c] %ld: %s (%.1lf)\n",
+                                   cur_task && cur_task->id == task->id ? '*' : ' ',
                                    task->is_done ? 'X' : ' ',
                                    task->id,
-                                   task->name);
+                                   task->name,
+                                   task->value);
     }
 }
 

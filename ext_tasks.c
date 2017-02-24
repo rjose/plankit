@@ -634,6 +634,34 @@ EC_DB_STR_SETTER(EC_set_name, "name!", "tasks", "name")
 EC_DB_STR_GETTER(EC_get_name, "name", "tasks", "name")
 
 
+static int store_task_id(gpointer gp_task_id_p, int num_cols, char **values, char **cols) {
+    if (num_cols != 1) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Unexpected num cols from store task query\n");
+        return 1;
+    }
+
+    gint64 *task_id_p = gp_task_id_p;
+    *task_id_p = values[0] ? g_ascii_strtoll(values[0], NULL, 10) : 0;
+
+    return 0;
+}
+
+
+static void EC_last_active_id(gpointer gp_entry) {
+    gint64 task_id;
+
+    char *error_message = NULL;
+    sqlite3 *connection = get_db_connection();
+    sqlite3_exec(connection, "select task from task_notes order by note desc limit 1", store_task_id, &task_id, &error_message);
+
+    if (error_message) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Problem executing 'last-active-id'\n----->%s", error_message);
+    }
+    push_param(new_int_param(task_id));
+}
+
 
 // -----------------------------------------------------------------------------
 /** Defines the tasks lexicon and adds it to the dictionary.
@@ -688,6 +716,8 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("d")->routine = EC_down;
     add_entry("u")->routine = EC_up;
     add_entry("g")->routine = EC_go;
+
+    add_entry("last-active-id")->routine = EC_last_active_id;
 
     add_entry("task_id")->routine = EC_get_task_id;
     add_entry("task_value")->routine = EC_get_task_value;

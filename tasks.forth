@@ -119,8 +119,17 @@ lex-tasks
 ## Redefines .q to close the databases first
 : .q   reset close-db .q ;
 
+
+## Goes to the task with the most recent note
+: active    last-active-id g ;
+
+
+# STARTUP
+
 # Open the databases
 open-db
+
+active
 
 # Become interactive
 .i

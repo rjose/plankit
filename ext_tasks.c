@@ -4,7 +4,7 @@
 
 The schema of the tasks.db is:
 
-- CREATE TABLE tasks(is_done INTEGER, id INTEGER PRIMARY KEY, name TEXT);
+- CREATE TABLE tasks(is_done INTEGER, id INTEGER PRIMARY KEY, name TEXT, value REAL);
 - CREATE TABLE parent_child(parent INTEGER, child INTEGER);
 - CREATE TABLE task_notes(task INTEGER, note INTEGER);
 
@@ -34,23 +34,8 @@ typedef struct {
     gint64 parent_id;
     gchar name[MAX_NAME_LEN];
     gboolean is_done;
+    double value;
 } Task;
-
-
-// -----------------------------------------------------------------------------
-/** Creates a new Task
-*/
-// -----------------------------------------------------------------------------
-static Task *new_task(gint64 id, gint64 parent_id, const gchar* name, gboolean is_done) {
-    Task *result = g_new(Task, 1);
-
-    result->id = id;
-    result->parent_id = parent_id;
-    g_strlcpy(result->name, name, MAX_NAME_LEN);
-    result->is_done = is_done;
-
-    return result;
-}
 
 
 // -----------------------------------------------------------------------------
@@ -140,18 +125,21 @@ static sqlite3 *get_db_connection() {
 // -----------------------------------------------------------------------------
 static int append_task_cb(gpointer gp_records, int num_cols, char **values, char **cols) {
     GSequence *records = gp_records;
-    if (num_cols != 4) {
+    if (num_cols != 5) {
         handle_error(ERR_GENERIC_ERROR);
         fprintf(stderr, "-----> Unexpected num cols from task query\n");
         return 1;
     }
 
-    gint64 id = g_ascii_strtoll(values[0], NULL, 10);
-    gint64 parent_id = g_ascii_strtoll(values[1], NULL, 10);
-    const gchar *name_text = values[2];
-    gboolean is_done = g_ascii_strtoll(values[3], NULL, 10);
+    // TODO: Read value and store
 
-    Task *task_new = new_task(id, parent_id, name_text, is_done);
+    Task task = {.id = g_ascii_strtoll(values[0], NULL, 10),
+                 .parent_id = g_ascii_strtoll(values[1], NULL, 10),
+                 .is_done = g_ascii_strtoll(values[3], NULL, 10),
+                 .value = g_ascii_strtod(values[4], NULL)};
+    g_strlcpy(task.name, values[2], MAX_NAME_LEN);
+
+    Task *task_new = copy_task(&task);
 
     g_sequence_append(records, task_new);
     return 0;
@@ -167,7 +155,7 @@ static int append_task_cb(gpointer gp_records, int num_cols, char **values, char
 static GSequence *select_tasks(const gchar *sql_conditions) {
     sqlite3 *connection = get_db_connection();
 
-    gchar *select = "select id, pc.parent, name, is_done "
+    gchar *select = "select id, pc.parent, name, is_done, value "
                     "from tasks inner join parent_child as pc on pc.child=id ";
 
     gchar *query = g_strconcat(select, sql_conditions, NULL);

@@ -2,8 +2,17 @@
 #
 # \brief App for managing tasks
 
+## Add notes lexicon, aliasing anything that collides
+lex-notes
+
+: n    N ;  # Generic note
+: s    S ;  # Start of work chunk
+: mid    M ;  # Middle of work chunk
+: e    E ;  # End of work chunk
+
 ## Add tasks lexicon
 lex-tasks
+
 
 ## Prints what app this is
 : app   "tasks.forth" . ;
@@ -21,11 +30,6 @@ lex-tasks
 ;
 
 
-## Alias the note words
-: n    N ;  # Generic note
-: s    S ;  # Start of work chunk
-: mid    M ;  # Middle of work chunk
-: e    E ;  # End of work chunk
 
 
 ## Redefine N, S, M, E to link the note to the current task

@@ -551,7 +551,6 @@ static void EC_search(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 /** Pops a note id and links the current task to it.
 
-TODO: See if we can do this in Forth
 */
 // -----------------------------------------------------------------------------
 static void EC_link_note(gpointer gp_entry) {
@@ -753,7 +752,7 @@ The following words are defined for manipulating Tasks:
 void EC_add_tasks_lexicon(gpointer gp_entry) {
     // Add the lexicons that this depends on
     find_and_execute("lex-sequence");
-    find_and_execute("lex-notes");  // This also includes lex-sqlite
+    find_and_execute("lex-sqlite");
 
     add_variable("tasks-db");
 

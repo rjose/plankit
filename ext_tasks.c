@@ -349,6 +349,27 @@ static gboolean is_active(Task *task) {
     return result;
 }
 
+
+static void print_task_line(Task *task) {
+    if (task->is_done) {
+        printf("(X)");
+    }
+    else {
+        printf("( )");
+    }
+
+    if (is_active(task)) {
+        printf("*");
+    }
+    else {
+        printf(" ");
+    }
+
+    printf("%ld: %s (%.1lf)\n", task->id,
+                                task->name,
+                                task->value);
+}
+
 static void print_task(gpointer gp_task, gpointer gp_cur_task) {
     Task *task = gp_task;
 
@@ -356,25 +377,7 @@ static void print_task(gpointer gp_task, gpointer gp_cur_task) {
         printf("Root task\n");
     }
     else {
-
-        if (task->is_done) {
-            printf("(X)");
-        }
-        else {
-            printf("( )");
-        }
-
-        if (is_active(task)) {
-            printf("*");
-        }
-        else {
-            printf(" ");
-        }
-
-
-        printf("%ld: %s (%.1lf)\n", task->id,
-                                    task->name,
-                                    task->value);
+        print_task_line(task);
     }
 }
 
@@ -746,6 +749,7 @@ void free_hash_sequence_value(gpointer key, gpointer value, gpointer unused) {
 
 static void print_hierarchy(Task *task, GHashTable *parent_children, gint level, gboolean is_last) {
     for (gint i=level-1; i >= 0; i--) {
+        printf("     ");
         if (i == 0) {
             if (is_last) {
                 printf(TREE_END TREE_HORIZ TREE_HORIZ TREE_HORIZ TREE_HORIZ);
@@ -758,12 +762,7 @@ static void print_hierarchy(Task *task, GHashTable *parent_children, gint level,
             printf("     ");
         }
     }
-    if (is_active(task)) printf("*");
-    if (task->is_done) printf("(X) ");
-    printf("%ld: %s (%.1lf)\n", task->id,
-                                task->name,
-                                task->value);
-
+    print_task_line(task);
 
     GSequence *children = g_hash_table_lookup(parent_children, (gpointer) task->id);
     for (GSequenceIter *iter=g_sequence_get_begin_iter(children);

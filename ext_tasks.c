@@ -351,18 +351,30 @@ static gboolean is_active(Task *task) {
 
 static void print_task(gpointer gp_task, gpointer gp_cur_task) {
     Task *task = gp_task;
-    Task *cur_task = gp_cur_task;
 
     if (!task) {
-        printf("%c    0: Root task\n", !cur_task ? '*' : ' ');
+        printf("Root task\n");
     }
     else {
-        printf("%c[%c] %4ld: %s (%.1lf)\n",
-                                   is_active(task) ? '*' : ' ',
-                                   task->is_done ? 'X' : ' ',
-                                   task->id,
-                                   task->name,
-                                   task->value);
+
+        if (task->is_done) {
+            printf("(X)");
+        }
+        else {
+            printf("( )");
+        }
+
+        if (is_active(task)) {
+            printf("*");
+        }
+        else {
+            printf(" ");
+        }
+
+
+        printf("%ld: %s (%.1lf)\n", task->id,
+                                    task->name,
+                                    task->value);
     }
 }
 
@@ -747,7 +759,7 @@ static void print_hierarchy(Task *task, GHashTable *parent_children, gint level,
         }
     }
     if (is_active(task)) printf("*");
-    if (task->is_done) printf("(X)");
+    if (task->is_done) printf("(X) ");
     printf("%ld: %s (%.1lf)\n", task->id,
                                 task->name,
                                 task->value);
@@ -800,6 +812,9 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
          iter = g_sequence_iter_next(iter), position++) {
 
         Task *task = g_sequence_get(iter);
+        if (!task) continue;
+
+        g_hash_table_insert(task_hash, (gpointer) task->id, task);
         g_hash_table_insert(task_hash, (gpointer) task->id, task);
         g_hash_table_insert(parent_children, (gpointer) task->id, g_sequence_new(NULL));
         g_hash_table_insert(task_order, (gpointer) task->id, (gpointer) position);
@@ -816,6 +831,8 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
          iter = g_sequence_iter_next(iter)) {
 
         Task *task = g_sequence_get(iter);
+        if (!task) continue;
+
         if (g_hash_table_contains(parent_children, (gpointer) task->parent_id)) {
             g_sequence_append(non_root_tasks, task);
         }
@@ -861,6 +878,50 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
     g_hash_table_destroy(task_order);
 }
 
+
+static void EC_hierarchy(gpointer gp_entry) {
+    Param *param_task_id = pop_param();
+
+    gchar id_str[MAX_ID_LEN];
+    snprintf(id_str, MAX_ID_LEN, "%ld", param_task_id->val_int);
+    gchar *condition = g_strconcat("where id=", id_str, NULL);
+
+    GQueue *queue = g_queue_new();
+    GSequence *tasks = select_tasks(condition);
+    g_free(condition);
+
+    if (g_sequence_get_length(tasks) == 0) goto done;
+
+    // Add first task to queue and then do BFS
+    g_queue_push_tail(queue, g_sequence_get(g_sequence_get_begin_iter(tasks)));
+
+    while (!g_queue_is_empty(queue)) {
+        Task *task = g_queue_pop_tail(queue);
+
+        // Select all children of this task
+        snprintf(id_str, MAX_ID_LEN, "%ld", task->id);
+        condition = g_strconcat("where pc.parent=", id_str, NULL);
+        GSequence *subtasks = select_tasks(condition);
+        g_free(condition);
+
+        for (GSequenceIter *iter=g_sequence_get_begin_iter(subtasks);
+             !g_sequence_iter_is_end(iter);
+             iter = g_sequence_iter_next(iter)) {
+
+             Task *subtask = copy_task(g_sequence_get(iter));
+             g_sequence_append(tasks, subtask);  // The 'tasks' sequence is responsible for freeing 'subtask'
+             g_queue_push_tail(queue, subtask);
+        }
+        g_sequence_free(subtasks);
+    }
+
+    push_param(new_custom_param(tasks, "[tasks]"));
+
+done:
+    // Cleanup
+    g_queue_free(queue);
+    free_param(param_task_id);
+}
 
 // -----------------------------------------------------------------------------
 /** Defines the tasks lexicon and adds it to the dictionary.
@@ -948,6 +1009,9 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
 
     add_entry("print-tasks")->routine = EC_print;
     add_entry("print-task-hierarchy")->routine = EC_print_task_hierarchy;
+
+    // TODO: Consider moving this to a "graph" lexicon
+    add_entry("hierarchy")->routine = EC_hierarchy;
 
     add_entry("reset")->routine = EC_reset;
 }

@@ -78,8 +78,18 @@ lex-tasks
         "task_value" descending
         print-tasks ;
 
+## Prints hierarchy of a task
+#  (task-id -- )
+: ph    hierarchy print-task-hierarchy ;
+
+
+## Prints hierarchy of a task (incomplete tasks)
+#  (task-id -- )
+: pih    hierarchy incomplete print-task-hierarchy ;
+
+
 ## Prints ancestors of current task ('w'here)
-: w   ancestors print-tasks ;
+: w   ancestors print-task-hierarchy ;
 
 ## Prints children of current task
 : sub   children
@@ -117,7 +127,7 @@ lex-tasks
 ## Lists all incomplete tasks
 : todo    all incomplete
           "task_value" descending
-          print-tasks
+          print-task-hierarchy
           ;
 
 : to      todo ;

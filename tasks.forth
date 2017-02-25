@@ -142,6 +142,10 @@ lex-tasks
 ## Goes to the task with the most recent note
 : active    last-active-id g ;
 
+### For testing
+
+: ap    all "task_value" descending print-task-hierarchy ;
+: aip    all incomplete print-task-hierarchy ;
 
 # STARTUP
 

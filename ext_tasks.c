@@ -24,6 +24,11 @@ stack, it is the responsibility of the caller to free that memory.
 
 #define MAX_NAME_LEN   256
 
+#define TREE_TEE     "├"
+#define TREE_VERT    "│"
+#define TREE_END     "└"
+#define TREE_HORIZ   "─"
+
 // -----------------------------------------------------------------------------
 /** Represents a note from a database record
 */
@@ -336,6 +341,14 @@ done:
 }
 
 
+static gboolean is_active(Task *task) {
+    if (!task) return 0;
+
+    Task *cur_task = get_cur_task();
+    gboolean result = cur_task && cur_task->id == task->id;
+    return result;
+}
+
 static void print_task(gpointer gp_task, gpointer gp_cur_task) {
     Task *task = gp_task;
     Task *cur_task = gp_cur_task;
@@ -345,7 +358,7 @@ static void print_task(gpointer gp_task, gpointer gp_cur_task) {
     }
     else {
         printf("%c[%c] %4ld: %s (%.1lf)\n",
-                                   cur_task && cur_task->id == task->id ? '*' : ' ',
+                                   is_active(task) ? '*' : ' ',
                                    task->is_done ? 'X' : ' ',
                                    task->id,
                                    task->name,
@@ -713,6 +726,127 @@ static void EC_last_active_id(gpointer gp_entry) {
 }
 
 
+void free_hash_sequence_value(gpointer key, gpointer value, gpointer unused) {
+    GSequence *seq = value;
+    g_sequence_free(seq);
+}
+
+
+static void print_hierarchy(Task *task, GHashTable *parent_children, gint level, gboolean is_last) {
+    for (gint i=level-1; i >= 0; i--) {
+        if (i == 0) {
+            if (is_last) {
+                printf(TREE_END TREE_HORIZ TREE_HORIZ TREE_HORIZ TREE_HORIZ);
+            }
+            else {
+                printf(TREE_TEE TREE_HORIZ TREE_HORIZ TREE_HORIZ TREE_HORIZ);
+            }
+        }
+        else {
+            printf("     ");
+        }
+    }
+    if (is_active(task)) printf("*");
+    if (task->is_done) printf("(X)");
+    printf("%ld: %s (%.1lf)\n", task->id,
+                                task->name,
+                                task->value);
+
+
+    GSequence *children = g_hash_table_lookup(parent_children, (gpointer) task->id);
+    for (GSequenceIter *iter=g_sequence_get_begin_iter(children);
+         !g_sequence_iter_is_end(iter);
+         iter = g_sequence_iter_next(iter)) {
+
+        Task *subtask = g_sequence_get(iter);
+        gboolean is_last = g_sequence_iter_is_end(g_sequence_iter_next(iter));
+        print_hierarchy(subtask, parent_children, level+1, is_last);
+    }
+}
+
+
+// -----------------------------------------------------------------------------
+/** Prints a sequence of tasks as a hierarchy
+
+(seq-tasks -- )
+*/
+// -----------------------------------------------------------------------------
+static void EC_print_task_hierarchy(gpointer gp_entry) {
+    Param *param_seq = pop_param();
+
+    GSequence *seq = param_seq->val_custom;
+
+    GHashTable *task_hash = g_hash_table_new(g_direct_hash, g_direct_equal);
+    GHashTable *parent_children = g_hash_table_new(g_direct_hash, g_direct_equal);
+
+    // ---------------------------------
+    // Iterate over all tasks and add them to the hash from parents to children as parents
+    // ---------------------------------
+    for (GSequenceIter *iter=g_sequence_get_begin_iter(seq);
+         !g_sequence_iter_is_end(iter);
+         iter = g_sequence_iter_next(iter)) {
+
+        Task *task = g_sequence_get(iter);
+        g_hash_table_insert(task_hash, (gpointer) task->id, task);
+        g_hash_table_insert(parent_children, (gpointer) task->id, g_sequence_new(NULL));
+    }
+
+    // ---------------------------------
+    // Split the tasks into those whose parents are in the table and whose parents aren't
+    // ---------------------------------
+    GSequence *root_tasks = g_sequence_new(NULL);
+    GSequence *non_root_tasks = g_sequence_new(NULL);
+
+    for (GSequenceIter *iter=g_sequence_get_begin_iter(seq);
+         !g_sequence_iter_is_end(iter);
+         iter = g_sequence_iter_next(iter)) {
+
+        Task *task = g_sequence_get(iter);
+        if (g_hash_table_contains(parent_children, (gpointer) task->parent_id)) {
+            g_sequence_append(non_root_tasks, task);
+        }
+        else {
+            g_sequence_append(root_tasks, task);
+        }
+    }
+
+
+    // Iterate over the nonroot tasks and add them to the parent_children table as children tasks
+    for (GSequenceIter *iter=g_sequence_get_begin_iter(non_root_tasks);
+         !g_sequence_iter_is_end(iter);
+         iter = g_sequence_iter_next(iter)) {
+
+        Task *task = g_sequence_get(iter);
+        GSequence *children = g_hash_table_lookup(parent_children, (gpointer) task->parent_id);
+        g_sequence_append(children, task);
+    }
+
+    // Iterate over the root tasks, descending through the parent_child tree, printing each level
+    printf("\n");
+    for (GSequenceIter *iter=g_sequence_get_begin_iter(root_tasks);
+         !g_sequence_iter_is_end(iter);
+         iter = g_sequence_iter_next(iter)) {
+
+        Task *task = g_sequence_get(iter);
+        gboolean is_last = g_sequence_iter_is_end(g_sequence_iter_next(iter));
+        print_hierarchy(task, parent_children, 0, is_last);
+        printf("\n");
+    }
+
+
+    // Clean up
+    g_hash_table_foreach(parent_children, free_hash_sequence_value, NULL);
+    g_sequence_free(seq);
+
+    g_sequence_free(root_tasks);
+    g_sequence_free(non_root_tasks);
+
+    free_param(param_seq);
+    g_hash_table_destroy(parent_children);
+    g_hash_table_destroy(task_hash);
+}
+
+
 // -----------------------------------------------------------------------------
 /** Defines the tasks lexicon and adds it to the dictionary.
 
@@ -798,5 +932,7 @@ void EC_add_tasks_lexicon(gpointer gp_entry) {
     add_entry("link-note")->routine = EC_link_note;
 
     add_entry("print-tasks")->routine = EC_print;
+    add_entry("print-task-hierarchy")->routine = EC_print_task_hierarchy;
+
     add_entry("reset")->routine = EC_reset;
 }

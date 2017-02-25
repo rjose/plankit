@@ -765,6 +765,17 @@ static void print_hierarchy(Task *task, GHashTable *parent_children, gint level,
 }
 
 
+gint compare_task_order(gconstpointer l, gconstpointer r, gpointer gp_task_order_hash) {
+    GHashTable *task_order_hash = gp_task_order_hash;
+    const Task *l_task = l;
+    const Task *r_task = r;
+    gint64 l_val = (gint64) g_hash_table_lookup(task_order_hash, (gpointer) l_task->id);
+    gint64 r_val = (gint64) g_hash_table_lookup(task_order_hash, (gpointer) r_task->id);
+
+    return l_val - r_val;
+}
+
+
 // -----------------------------------------------------------------------------
 /** Prints a sequence of tasks as a hierarchy
 
@@ -778,17 +789,20 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
 
     GHashTable *task_hash = g_hash_table_new(g_direct_hash, g_direct_equal);
     GHashTable *parent_children = g_hash_table_new(g_direct_hash, g_direct_equal);
+    GHashTable *task_order = g_hash_table_new(g_direct_hash, g_direct_equal);
 
     // ---------------------------------
     // Iterate over all tasks and add them to the hash from parents to children as parents
     // ---------------------------------
+    gint64 position = 0;
     for (GSequenceIter *iter=g_sequence_get_begin_iter(seq);
          !g_sequence_iter_is_end(iter);
-         iter = g_sequence_iter_next(iter)) {
+         iter = g_sequence_iter_next(iter), position++) {
 
         Task *task = g_sequence_get(iter);
         g_hash_table_insert(task_hash, (gpointer) task->id, task);
         g_hash_table_insert(parent_children, (gpointer) task->id, g_sequence_new(NULL));
+        g_hash_table_insert(task_order, (gpointer) task->id, (gpointer) position);
     }
 
     // ---------------------------------
@@ -818,7 +832,7 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
 
         Task *task = g_sequence_get(iter);
         GSequence *children = g_hash_table_lookup(parent_children, (gpointer) task->parent_id);
-        g_sequence_append(children, task);
+        g_sequence_insert_sorted(children, task, compare_task_order, task_order);
     }
 
     // Iterate over the root tasks, descending through the parent_child tree, printing each level
@@ -844,6 +858,7 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
     free_param(param_seq);
     g_hash_table_destroy(parent_children);
     g_hash_table_destroy(task_hash);
+    g_hash_table_destroy(task_order);
 }
 
 

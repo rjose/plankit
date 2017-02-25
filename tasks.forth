@@ -145,7 +145,7 @@ lex-tasks
 ### For testing
 
 : ap    all "task_value" descending print-task-hierarchy ;
-: aip    all incomplete print-task-hierarchy ;
+: aip    all incomplete "task_value" descending print-task-hierarchy ;
 
 # STARTUP
 

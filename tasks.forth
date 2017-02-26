@@ -2,7 +2,12 @@
 #
 # \brief App for managing tasks
 
-## Add notes lexicon, aliasing anything that collides
+## Prints task name
+: app   "tasks.forth" . ;
+
+# ======================================
+# Add notes lexicon, aliasing anything that collides
+# ======================================
 lex-notes
 
 : n    N ;  # Generic note
@@ -14,8 +19,9 @@ lex-notes
 lex-tasks
 
 
-## Prints what app this is
-: app   "tasks.forth" . ;
+# ======================================
+# Specifies db files for this app
+# ======================================
 
 ## Opens database connections
 : open-db
@@ -30,7 +36,9 @@ lex-tasks
 ;
 
 
-
+# ======================================
+# Integrate with notes
+# ======================================
 
 ## Redefine N, S, M, E to link the note to the current task
 : N    N
@@ -54,6 +62,10 @@ lex-tasks
 ;
 
 
+# ======================================
+# Printing notes
+# ======================================
+
 ## Prints notes for current chunk of work
 : c  chunk-notes print-notes ;
 
@@ -65,9 +77,19 @@ lex-tasks
 #  or the amount of time of a break.
 : t  time ;
 
-## Prints the current task
-: ?   [cur-task] print-tasks ;
 
+## Prints all notes associated with a task
+: notes
+       task-note_ids
+       note_ids-to-notes
+       print-notes
+;
+
+
+
+# ======================================
+# Printing tasks
+# ======================================
 ## Prints incomplete siblings of the current task
 : l     siblings incomplete
         "task_value" descending
@@ -101,6 +123,28 @@ lex-tasks
         "task_value" descending
         print-tasks ;
 
+## Lists all incomplete tasks
+: todo    all incomplete
+          "task_value" descending
+          print-task-hierarchy
+          ;
+
+: to      todo ;
+
+## Lists all incomplete top level tasks
+: l1    level-1 incomplete
+        "task_value" descending
+        print-tasks ;
+
+## Prints all tasks as a tree
+: ap    all "task_value" descending print-task-hierarchy ;
+
+
+# ======================================
+# Updating tasks
+# ======================================
+
+## Helper function to pull fresh cur-task data from db after a change
 : refresh-cur-task  *cur-task @ task_id g ;
 
 ## Marks current task as done
@@ -122,28 +166,12 @@ lex-tasks
 ;
 
 
+# ======================================
+# Misc
+# ======================================
+
+## Redefine 'm'ove task so the cur-task gets updated
 : m    m refresh-cur-task ;
-
-## Lists all incomplete tasks
-: todo    all incomplete
-          "task_value" descending
-          print-task-hierarchy
-          ;
-
-: to      todo ;
-
-
-## Lists all incomplete top level tasks
-: l1    level-1 incomplete
-        "task_value" descending
-        print-tasks ;
-
-## Prints all notes associated with a task
-: notes
-       task-note_ids
-       note_ids-to-notes
-       print-notes
-;
 
 ## Redefines .q to close the databases first
 : .q   reset close-db .q ;
@@ -152,16 +180,15 @@ lex-tasks
 ## Goes to the task with the most recent note
 : active    last-active-id g ;
 
-### For testing
 
-: ap    all "task_value" descending print-task-hierarchy ;
-: aip    all incomplete "task_value" descending print-task-hierarchy ;
-
+# ======================================
 # STARTUP
+# ======================================
 
 # Open the databases
 open-db
 
+# Go to last active task
 active
 
 # Become interactive

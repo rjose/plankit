@@ -577,6 +577,100 @@ int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **co
 
 
 // -----------------------------------------------------------------------------
+/** Creates a new string with parameters substituted
+*/
+// -----------------------------------------------------------------------------
+static gchar *macro_substitute(const gchar *const_str) {
+    GSequence *strings = g_sequence_new(g_free);
+
+    gchar *str = g_strdup(const_str);
+    guint index = 0;
+    while(str[index]) {
+        if (str[index] == '\'') str[index] = '"';
+        index++;
+    }
+
+    // =================================
+    // Scans string breaking at any `<digit> and performing a macro expansion
+    // =================================
+    index = 0;
+    guint start_word = 0;
+    guint stack_length = g_queue_get_length(_stack);
+
+    while(str[index]) {
+        // Split string if we hit a "`"
+        if (str[index] == '`') {
+            if (index > start_word) {
+                g_sequence_append(strings, g_strndup(str+start_word, index - start_word));
+            }
+
+            guint stack_element = str[index+1] - '0';
+            guint stack_index = stack_length - stack_element - 1;
+            const Param *param = g_queue_peek_nth(_stack, stack_index);
+            g_sequence_append(strings, g_strdup(param->val_string));
+            index++;
+            start_word = index + 1;
+        }
+        index++;
+    }
+    if (index > start_word) {
+        g_sequence_append(strings, g_strndup(str+start_word, index-start_word));
+    }
+    g_free(str);
+
+
+    // =================================
+    // Figure out length of result string
+    // =================================
+    guint result_len = 0;
+    gchar *fragment;
+    for (GSequenceIter *iter=g_sequence_get_begin_iter(strings);
+         !g_sequence_iter_is_end(iter);
+         iter = g_sequence_iter_next(iter)) {
+
+        fragment = g_sequence_get(iter);
+        result_len += strlen(fragment);
+    }
+    gchar *result = g_malloc(result_len+1);
+
+
+    // =================================
+    // Copy strings into a result string
+    // =================================
+    gchar *start = result;
+    for (GSequenceIter *iter=g_sequence_get_begin_iter(strings);
+         !g_sequence_iter_is_end(iter);
+         iter = g_sequence_iter_next(iter)) {
+
+        start = g_stpcpy(start, g_sequence_get(iter));
+    }
+
+    g_sequence_free(strings);
+
+    return result;
+}
+
+
+// -----------------------------------------------------------------------------
+/** Executes a string with macro substitutions.
+
+(str -- ?)
+*/
+// -----------------------------------------------------------------------------
+static void EC_execute_string(gpointer gp_entry) {
+    Param *param_string = pop_param();
+
+    // Calling scan_string makes a copy of the specified string, so its OK to free it
+    gchar *str = macro_substitute(param_string->val_string);
+    free_param(param_string);
+
+    scan_string(str);
+    g_free(str);
+}
+
+
+
+// -----------------------------------------------------------------------------
 /** Defines the basic words in a Forth dictionary
 
 ### Interpreter control
@@ -620,6 +714,8 @@ void add_basic_words() {
     add_entry("variable")->routine = EC_variable;
     add_entry("!")->routine = EC_store_variable_value;
     add_entry("@")->routine = EC_fetch_variable_value;
+
+    add_entry(",")->routine = EC_execute_string;
 
     add_entry(":")->routine = EC_define;
 

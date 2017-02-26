@@ -31,7 +31,6 @@ DIGIT  [0-9]
                            // delete the buffer at that position
                            input_stack_ptr--;
                            yy_delete_buffer(input_stack[input_stack_ptr]);
-                           printf("Deleting buffer: %d\n", input_stack_ptr);
 
                            // If we're at the start of the input stack, we're done.
                            // Otherwise, switch to the previous input buffer.
@@ -92,7 +91,6 @@ void scan_string(const char* str) {
 // -----------------------------------------------------------------------------
 void destroy_input_stack() {
     for (gint i=0; i < input_stack_ptr; i++) {
-        printf("Cleaning up input stack: %d\n", i);
         yy_delete_buffer(input_stack[i]);
     }
 }

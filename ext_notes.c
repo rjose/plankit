@@ -497,7 +497,7 @@ The following words are defined for manipulating notes:
 // -----------------------------------------------------------------------------
 void EC_add_notes_lexicon(gpointer gp_entry) {
     // Add the lexicons that this depends on
-    find_and_execute("lex-sqlite");
+    scan_string("lex-sqlite");
 
     add_variable("notes-db");
 

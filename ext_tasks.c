@@ -737,7 +737,7 @@ static void EC_move(gpointer gp_entry) {
 
 
 // These are "entry code" functions for various setters and getter
-EC_OBJ_FIELD_GETTER(EC_get_task_id, Task, new_int_param(obj->id))
+EC_OBJ_FIELD_GETTER(EC_get_task_id, Task, new_int_param(obj ? obj->id : 0))
 EC_OBJ_FIELD_GETTER(EC_get_task_value, Task, new_double_param(obj->value))
 EC_OBJ_FIELD_GETTER(EC_get_task_is_done, Task, new_int_param(obj->is_done))
 EC_OBJ_FIELD_GETTER(EC_get_task_name, Task, new_str_param(obj->name))
@@ -1043,8 +1043,8 @@ The following words are defined for manipulating Tasks:
 // -----------------------------------------------------------------------------
 void EC_add_tasks_lexicon(gpointer gp_entry) {
     // Add the lexicons that this depends on
-    find_and_execute("lex-sequence");
-    find_and_execute("lex-sqlite");
+    scan_string("lex-sequence");
+    scan_string("lex-sqlite");
 
     add_variable("tasks-db");
 

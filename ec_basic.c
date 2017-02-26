@@ -30,6 +30,9 @@ void add_variable(const gchar *word) {
 
 // -----------------------------------------------------------------------------
 /** Convenience function to execute a word from the dictionary.
+
+\note This function is only valid for builtin words, constants, or variables because
+      it does not properly manage the return stack.
 */
 // -----------------------------------------------------------------------------
 void find_and_execute(const gchar *word) {

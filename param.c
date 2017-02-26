@@ -24,6 +24,7 @@ Param *new_param() {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Creates a new int-valued Param.
 
@@ -37,6 +38,7 @@ Param *new_int_param(gint64 val_int) {
     result->val_int = val_int;
     return result;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -54,6 +56,7 @@ Param *new_double_param(gdouble val_double) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Creates a new string-valued Param
 
@@ -66,6 +69,7 @@ Param *new_str_param(const gchar *str) {
     result->val_string = g_strdup(str);
     return result;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -83,6 +87,7 @@ Param *new_routine_param(routine_ptr val_routine) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Creates a new entry-valued Param.
 
@@ -98,6 +103,7 @@ Param *new_entry_param(Entry *val_entry) {
     result->val_entry = val_entry;
     return result;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -119,6 +125,7 @@ Param *new_pseudo_entry_param(const gchar *word, routine_ptr routine) {
     result->val_pseudo_entry.params = g_sequence_new(free_param);
     return result;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -152,6 +159,7 @@ void copy_param(Param *dst, Param *src) {
     // Make a copy of the string since the dst needs to own it
     dst->val_string = g_strdup(src->val_string);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -201,6 +209,7 @@ void print_param(Param *param, FILE *file, const gchar *prefix) {
             break;
     }
 }
+
 
 
 // -----------------------------------------------------------------------------

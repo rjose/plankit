@@ -27,6 +27,7 @@ static void EC_sqlite3_open(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pops a database connection and closes it.
 */
@@ -45,6 +46,7 @@ static void EC_sqlite3_close(gpointer gp_entry) {
 
     free_param(param_connection);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -71,9 +73,9 @@ static void EC_sqlite3_last_id(gpointer gp_entry) {
 
 The following words are defined:
 
-- sqlite3-open: (db-name -- db-connection) Opens a connection to a database
-- sqlite3-close: (db-connection -- ) Closes a connection to a database
-- sqlite3-last-id: (-- id) Pushes most recent row ID
+- sqlite3-open (db-name -- db-connection) Opens a connection to a database
+- sqlite3-close (db-connection -- ) Closes a connection to a database
+- sqlite3-last-id (-- id) Pushes most recent row ID
 
 */
 // -----------------------------------------------------------------------------

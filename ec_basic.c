@@ -27,6 +27,7 @@ void add_variable(const gchar *word) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Convenience function to execute a word from the dictionary.
 */
@@ -42,6 +43,7 @@ void find_and_execute(const gchar *word) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Sets the _quit flag so the main control loop stops.
 */
@@ -49,6 +51,7 @@ void find_and_execute(const gchar *word) {
 static void EC_quit(gpointer gp_entry) {
     _quit = 1;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -90,7 +93,6 @@ static void EC_constant(gpointer gp_entry) {
 
 
 
-
 // -----------------------------------------------------------------------------
 /** Creates a new variable entry.
 
@@ -106,6 +108,7 @@ static void EC_variable(gpointer gp_entry) {
     Token token = get_token();
     add_variable(token.word);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -146,6 +149,7 @@ static void EC_store_variable_value(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pops a variable and pushes its value onto the stack
 
@@ -168,6 +172,7 @@ static void EC_fetch_variable_value(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pushes the first parameter of an entry onto the stack.
 
@@ -185,6 +190,7 @@ void EC_push_param0(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pushes address of entry onto the stack
 
@@ -198,10 +204,12 @@ static void EC_push_entry_address(gpointer gp_entry) {
 }
 
 
+
 static void gfunc_print_param(gpointer gp_param, gpointer user_data) {
     Param *param = gp_param;
     print_param(param, stdout, "");
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -214,6 +222,7 @@ static void EC_print_stack(gpointer gp_entry) {
     g_queue_foreach(_stack, gfunc_print_param, NULL);
     printf("\n");
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -253,6 +262,7 @@ static void EC_define(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pops return stack and stores in _ip.
 */
@@ -260,6 +270,7 @@ static void EC_define(gpointer gp_entry) {
 static void EC_pop_return_stack(gpointer gp_entry) {
     _ip = pop_param_r();
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -274,6 +285,8 @@ static void EC_end_define(gpointer gp_entry) {
 
     _mode = 'E';
 }
+
+
 
 // -----------------------------------------------------------------------------
 /** Implements branching by compiling a conditional jump into a definition.
@@ -296,6 +309,7 @@ static void EC_if(gpointer gp_entry) {
     Param *param_pseudo_entry = new_entry_param(&pseudo_param->val_pseudo_entry);
     push_param(param_pseudo_entry);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -332,6 +346,7 @@ static void EC_else(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Implements the end of a conditional section of code.
 
@@ -349,6 +364,7 @@ static void EC_then(gpointer gp_entry) {
 
     free_param(param_jmp_entry);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -378,6 +394,7 @@ static void EC_jmp_if_false(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Implements an unconditional jmp by updating the instruction pointer.
 
@@ -398,17 +415,19 @@ static void EC_jmp(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Prints the words in an Entry definition.
 */
 // -----------------------------------------------------------------------------
 static void EC_print_definition(gpointer gp_entry) {
-    Token token = get_token();
-    Entry *entry = find_entry(token.word);
+    Param *param_word = pop_param();
+    Entry *entry = find_entry(param_word->val_string);
+
     if (!entry) {
         handle_error(ERR_UNKNOWN_WORD);
-        fprintf(stderr, "-----> %s\n", token.word);
-        return;
+        fprintf(stderr, "-----> %s\n", param_word->val_string);
+        goto done;
     }
 
     for (GSequenceIter *iter = g_sequence_get_begin_iter(entry->params);
@@ -418,7 +437,12 @@ static void EC_print_definition(gpointer gp_entry) {
         Param *p = g_sequence_get(iter);
         print_param(p, stdout, "");
     }
+
+done:
+
+    free_param(param_word);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -463,10 +487,10 @@ static void EC_execute(gpointer gp_entry) {
     }
 }
 
+
+
 // -----------------------------------------------------------------------------
 /** Pops a parameter and prints it.
-
-( param -- )
 
 */
 // -----------------------------------------------------------------------------
@@ -477,10 +501,9 @@ static void EC_pop_and_print(gpointer gp_entry) {
 }
 
 
-// -----------------------------------------------------------------------------
-/** Pops a parameter
 
-( param -- )
+// -----------------------------------------------------------------------------
+/** Pops a parameter from the stack
 
 */
 // -----------------------------------------------------------------------------
@@ -490,6 +513,13 @@ static void EC_pop(gpointer gp_entry) {
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Callback used with sqlite3 to store a retrieved value.
+
+This is used with the EC_DB_DOUBLE_GETTER and EC_DB_INT_GETTER macros.
+*/
+// -----------------------------------------------------------------------------
 int set_double_cb(gpointer gp_double_ref, int num_cols, char **values, char **cols) {
     if (num_cols != 1) {
         handle_error(ERR_GENERIC_ERROR);
@@ -503,10 +533,34 @@ int set_double_cb(gpointer gp_double_ref, int num_cols, char **values, char **co
 }
 
 
-/** This stores a string value from a query
+
+// -----------------------------------------------------------------------------
+/** Callback used with sqlite3 to store a retrieved value.
+
+*/
+// -----------------------------------------------------------------------------
+int set_int_cb(gpointer gp_int_ref, int num_cols, char **values, char **cols) {
+    if (num_cols != 1) {
+        handle_error(ERR_GENERIC_ERROR);
+        fprintf(stderr, "-----> Unexpected num cols in set_int_cb\n");
+        return 1;
+    }
+
+    gint64 *int_ref = gp_int_ref;
+    *int_ref = values[0] ? g_ascii_strtoll(values[0], NULL, 10) : 0.0;
+    return 0;
+}
+
+
+
+// -----------------------------------------------------------------------------
+/** This stores a string value from a query.
+
+This is used with the EC_DB_STR_GETTER macro.
 
 \note Since this allocates a new string, the caller is responsible for freeing it
 */
+// -----------------------------------------------------------------------------
 int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **cols) {
     if (num_cols != 1) {
         handle_error(ERR_GENERIC_ERROR);
@@ -520,51 +574,70 @@ int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **co
     return 0;
 }
 
-static void EC_negate(gpointer gp_entry) {
-    Param *param_value = pop_param();
-    if (param_value->type == 'I') {
-        param_value->val_int *= -1;
-    }
-    else if (param_value->type == 'D') {
-        param_value->val_double *= -1.0;
-    }
-    push_param(param_value);
-}
 
 
+// -----------------------------------------------------------------------------
+/** Defines the basic words in a Forth dictionary
+
+### Interpreter control
+- .q ( -- ) Quits the interpreter
+- .i ( -- ) Accepts input from the user
+
+### Stack words
+- pop: ( -- ) Pops stack
+- . ( -- ) Pops stack and prints value
+- .s ( -- ) Prints the values on the stack (nondestructive)
+
+### Constants and variables
+- constant: (val -- ) Creates a constant
+- variable: ( -- ) Creates a variable (see '!' and '@')
+- ! (val variable -- ) Stores a value in a variable
+- @ (variable -- ) Fetches the value of a variable
+
+### Definitions
+- : ( -- ) Starts a new definition
+- ; ( -- ) Ends a definition
+- .d (str -- ) Prints the words in a definition
+
+### Branching
+- if (immediate) Used during compile to define branching
+- else (immediate) Used during compile to define branching
+- then (immediate) Used during compile to define branching
+
+*/
+// -----------------------------------------------------------------------------
 void add_basic_words() {
     Entry *entry;
 
     add_entry(".q")->routine = EC_quit;
     add_entry(".i")->routine = EC_interactive;
+
     add_entry(".")->routine = EC_pop_and_print;
+    add_entry(".s")->routine = EC_print_stack;
     add_entry("pop")->routine = EC_pop;
 
     add_entry("constant")->routine = EC_constant;
     add_entry("variable")->routine = EC_variable;
-    add_entry(".s")->routine = EC_print_stack;
-    add_entry(":")->routine = EC_define;
+    add_entry("!")->routine = EC_store_variable_value;
+    add_entry("@")->routine = EC_fetch_variable_value;
 
-    add_entry("negate")->routine = EC_negate;
+    add_entry(":")->routine = EC_define;
 
     entry = add_entry(";");
     entry->immediate = 1;
     entry->routine = EC_end_define;
 
     add_entry(".d")->routine = EC_print_definition;
-    add_entry("!")->routine = EC_store_variable_value;
-    add_entry("@")->routine = EC_fetch_variable_value;
 
     entry = add_entry("if");
     entry->immediate = 1;
     entry->routine = EC_if;
 
-    entry = add_entry("then");
-    entry->immediate = 1;
-    entry->routine = EC_then;
-
     entry = add_entry("else");
     entry->immediate = 1;
     entry->routine = EC_else;
 
+    entry = add_entry("then");
+    entry->immediate = 1;
+    entry->routine = EC_then;
 }

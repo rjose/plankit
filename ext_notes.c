@@ -8,10 +8,8 @@ The associated schema of a notes.db is this:
 
 */
 
-#define MAX_TIMESTAMP_LEN 48
-#define MAX_ELAPSED_LEN 16
-#define MAX_ID_LEN 16
-#define NOTE_FIELDS   "id, type, note, timestamp, date from notes "
+#define MAX_TIMESTAMP_LEN 48  /**< \brief Max length of a timestamp string */
+#define MAX_ELAPSED_LEN 16    /**< \brief Max length of an elapsed minutes string */
 
 // -----------------------------------------------------------------------------
 /** Represents a note from a database record
@@ -26,6 +24,7 @@ typedef struct {
     gchar date_text[MAX_TIMESTAMP_LEN];       /**< Note date string */
     struct tm timestamp;                      /**< Timestamp as tm struct */
 } Note;
+
 
 
 // -----------------------------------------------------------------------------
@@ -50,6 +49,7 @@ static Note *new_note(gint64 id, gchar type, const gchar *note, const gchar *tim
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Creates a new copy of a note
 */
@@ -58,6 +58,8 @@ static Note *copy_note(Note *src) {
     Note *result = new_note(src->id, src->type, src->note, src->timestamp_text, src->date_text);
     return result;
 }
+
+
 
 // -----------------------------------------------------------------------------
 /** Frees an allocated Note.
@@ -87,6 +89,7 @@ static sqlite3 *get_db_connection() {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Callback used to write note records from an SQL query into a sequence of records.
 */
@@ -111,6 +114,7 @@ static int append_note_cb(gpointer gp_records, int num_cols, char **values, char
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Returns a GSequence of notes matching the conditions.
 
@@ -120,7 +124,7 @@ static int append_note_cb(gpointer gp_records, int num_cols, char **values, char
 static GSequence *select_notes(const gchar *sql_conditions) {
     sqlite3 *connection = get_db_connection();
 
-    gchar *select = "select " NOTE_FIELDS;
+    gchar *select = "select id, type, note, timestamp, date from notes ";
     gchar *query = g_strconcat(select, sql_conditions, NULL);
 
 
@@ -142,6 +146,7 @@ static GSequence *select_notes(const gchar *sql_conditions) {
 
     return result;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -172,6 +177,7 @@ static void store_note(const gchar *type) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Stores a start note in the notes database.
 */
@@ -179,6 +185,7 @@ static void store_note(const gchar *type) {
 static void EC_start_chunk(gpointer gp_entry) {
     store_note("S");
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -190,6 +197,7 @@ static void EC_middle_chunk(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Stores an end note in the notes database.
 */
@@ -199,6 +207,7 @@ static void EC_end_chunk(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Stores a generic note in the notes database.
 */
@@ -206,6 +215,7 @@ static void EC_end_chunk(gpointer gp_entry) {
 static void EC_generic_note(gpointer gp_entry) {
     store_note("N");
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -219,6 +229,7 @@ static gint64 elapsed_min(time_t time_l, time_t time_r) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Returns the number of minutes between two notes.
 */
@@ -228,6 +239,7 @@ static gint64 get_minute_difference(Note *note_l, Note *note_r) {
     time_t time_r = mktime(&note_r->timestamp);
     return elapsed_min(time_l, time_r);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -243,6 +255,7 @@ static void write_elapsed_minutes(gchar *dst, gint64 len, Note *note_l, Note *no
         snprintf(dst, len, "%ld", num_minutes);
     }
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -276,6 +289,7 @@ static Note *get_latest_S_note() {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Returns most recent note with type 'S' or 'E'.
 */
@@ -293,6 +307,7 @@ static Note *get_latest_SE_note() {
 
     return result;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -314,6 +329,7 @@ static void EC_time(gpointer gp_entry) {
 
     free_note(note);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -339,6 +355,7 @@ static void EC_chunk_notes(gpointer gp_entry) {
     Param *param_new = new_custom_param(records, "GSequence of Notes");
     push_param(param_new);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -391,6 +408,7 @@ static void EC_print(gpointer gp_entry) {
     g_sequence_free(records);
     free_param(param_note_sequence);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -455,24 +473,25 @@ done:
 }
 
 
+
 // -----------------------------------------------------------------------------
-/** Defines the notes lexicon and adds it to the dictionary.
+/** Defines the notes lexicon
 
 The following words are defined for manipulating notes:
 
 - notes-db: This holds the sqlite database connection for notes
 
-- S: (string -- ) Creates a note that starts a work chunk
-- M: (string -- ) Creates a note in the middle of a work chunk
-- E: (string -- ) Creates a note that ends a work chunk
-- N: (string -- ) Creates a generic note
+- S (string -- ) Creates a note that starts a work chunk
+- M (string -- ) Creates a note in the middle of a work chunk
+- E (string -- ) Creates a note that ends a work chunk
+- N (string -- ) Creates a generic note
 
-- time: ( -- ) Prints the elapsed time since the last start or end note
+- time ( -- ) Prints the elapsed time since the last start or end note
 
-- today-notes: ( -- [notes from today])
-- chunk-notes: ( -- [notes from current chunk])
-- print-notes: ([notes] -- ) Prints notes
-- note_ids-to-notes: (Array[note ids] -- [notes])
+- today-notes ( -- [notes from today])
+- chunk-notes ( -- [notes from current chunk])
+- print-notes ([notes] -- ) Prints notes
+- note_ids-to-notes (Array[note ids] -- [notes])
 
 */
 // -----------------------------------------------------------------------------

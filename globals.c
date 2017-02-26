@@ -82,10 +82,10 @@ const gchar *error_type_to_string(gint error_type) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Returns the next token from the input stream. If at the EOF, this returns a
 token with type equal to EOF.
-
 
 \returns A Token representing the next token
 */
@@ -95,13 +95,13 @@ Token get_token() {
     result.type = yylex();
     if (result.type == 'S') {
         g_strlcpy(result.word, yytext, MAX_WORD_LEN);
-
     }
     else {
         g_strlcpy(result.word, yytext, MAX_WORD_LEN);
     }
     return result;
 }
+
 
 
 // -----------------------------------------------------------------------------

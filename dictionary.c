@@ -45,6 +45,11 @@ Entry *add_entry(const gchar *word) {
 }
 
 
+// -----------------------------------------------------------------------------
+/** Adds words to add various lexicons to the dictionary.
+
+*/
+// -----------------------------------------------------------------------------
 static void hook_up_extensions() {
     add_entry("lex-sequence")->routine = EC_add_sequence_lexicon;
     add_entry("lex-sqlite")->routine = EC_add_sqlite_lexicon;

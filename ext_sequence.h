@@ -1,4 +1,4 @@
-/** \file sequence.h
+/** \file ext_sequence.h
 */
 
 #pragma once

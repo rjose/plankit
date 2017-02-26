@@ -22,24 +22,26 @@ stack, it is the responsibility of the caller to free that memory.
 
 */
 
-#define MAX_NAME_LEN   256
+#define MAX_NAME_LEN   256  /**< \brief Length of string to hold task names */
 
 #define TREE_TEE     "├"
 #define TREE_VERT    "│"
 #define TREE_END     "└"
 #define TREE_HORIZ   "─"
 
+
 // -----------------------------------------------------------------------------
 /** Represents a note from a database record
 */
 // -----------------------------------------------------------------------------
 typedef struct {
-    gint64 id;     /**< \brief Record ID */
+    gint64 id;
     gint64 parent_id;
     gchar name[MAX_NAME_LEN];
     gboolean is_done;
-    double value;
+    double value;              /**< \brief Used to rank tasks */
 } Task;
+
 
 
 // -----------------------------------------------------------------------------
@@ -53,6 +55,7 @@ static Task *copy_task(Task *src) {
     *result = *src;
     return result;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -73,6 +76,7 @@ static Task *get_cur_task() {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Sets the '*cur-task' variable.
 
@@ -90,6 +94,7 @@ static void set_cur_task(Task *task) {
     find_and_execute("*cur-task");
     find_and_execute("!");
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -123,6 +128,7 @@ static sqlite3 *get_db_connection() {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Callback used to write note records from an SQL query into a sequence of records.
 */
@@ -149,6 +155,7 @@ static int append_task_cb(gpointer gp_records, int num_cols, char **values, char
     g_sequence_append(records, task_new);
     return 0;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -341,6 +348,11 @@ done:
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Helper function that returns 1 if a task is active and 0 otherwise.
+*/
+// -----------------------------------------------------------------------------
 static gboolean is_active(Task *task) {
     if (!task) return 0;
 
@@ -350,6 +362,15 @@ static gboolean is_active(Task *task) {
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Helper function to print a task line out
+
+Here's a sample:
+
+   "( ) 21: Compute effort for a task using notes (50.0)"
+*/
+// -----------------------------------------------------------------------------
 static void print_task_line(Task *task) {
     if (task->is_done) {
         printf("(X)");
@@ -370,6 +391,12 @@ static void print_task_line(Task *task) {
                                 task->value);
 }
 
+
+
+// -----------------------------------------------------------------------------
+/** Used for printing a list of tasks
+*/
+// -----------------------------------------------------------------------------
 static void print_task(gpointer gp_task, gpointer gp_cur_task) {
     Task *task = gp_task;
 
@@ -380,6 +407,7 @@ static void print_task(gpointer gp_task, gpointer gp_cur_task) {
         print_task_line(task);
     }
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -401,6 +429,7 @@ static void EC_print(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pushes copy of cur-task onto the stack as a seq
 
@@ -417,6 +446,7 @@ static void EC_seq_cur_task(gpointer gp_entry) {
     Param *param_new = new_custom_param(seq, "[cur-task]");
     push_param(param_new);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -459,6 +489,7 @@ static void EC_all(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pops a GSequence of Task and selects only those tasks that are incomplete
     and pushes this new sequence back onto the stack
@@ -490,6 +521,7 @@ static void EC_incomplete(gpointer gp_entry) {
     Param *param_new = new_custom_param(incomplete, "[incomplete]");
     push_param(param_new);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -527,6 +559,7 @@ static void EC_ancestors(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pushes a sequence of all children of *cur-task onto the stack
 */
@@ -544,6 +577,7 @@ static void EC_children(gpointer gp_entry) {
     Param *param_new = new_custom_param(seq, "[children]");
     push_param(param_new);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -579,6 +613,7 @@ static void EC_search(gpointer gp_entry) {
 // -----------------------------------------------------------------------------
 /** Pops a note id and links the current task to it.
 
+TODO: Have this take a task ID
 */
 // -----------------------------------------------------------------------------
 static void EC_link_note(gpointer gp_entry) {
@@ -608,6 +643,7 @@ static void EC_link_note(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Callback to append a note ID onto an array.
 */
@@ -628,9 +664,12 @@ static int append_note_id_cb(gpointer gp_note_ids, int num_cols, char **values, 
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Looks up all the notes associated with a task and pushes a GArray of their
     ids onto the stack.
+
+TODO: Make this take an task ID
 */
 // -----------------------------------------------------------------------------
 static void EC_task_note_ids(gpointer gp_entry) {
@@ -655,6 +694,7 @@ static void EC_task_note_ids(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Sets *cur-task to NULL, effectively freeing its memory.
 */
@@ -664,11 +704,11 @@ static void EC_reset(gpointer gp_entry) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Moves a task to a new parent.
 
 (child parent -- )
-
 */
 // -----------------------------------------------------------------------------
 static void EC_move(gpointer gp_entry) {
@@ -696,7 +736,7 @@ static void EC_move(gpointer gp_entry) {
 }
 
 
-
+// These are "entry code" functions for various setters and getter
 EC_OBJ_FIELD_GETTER(EC_get_task_id, Task, new_int_param(obj->id))
 EC_OBJ_FIELD_GETTER(EC_get_task_value, Task, new_double_param(obj->value))
 EC_OBJ_FIELD_GETTER(EC_get_task_is_done, Task, new_int_param(obj->is_done))
@@ -712,26 +752,17 @@ EC_DB_STR_SETTER(EC_set_name, "name!", "tasks", "name")
 EC_DB_STR_GETTER(EC_get_name, "name", "tasks", "name")
 
 
-static int store_task_id(gpointer gp_task_id_p, int num_cols, char **values, char **cols) {
-    if (num_cols != 1) {
-        handle_error(ERR_GENERIC_ERROR);
-        fprintf(stderr, "-----> Unexpected num cols from store task query\n");
-        return 1;
-    }
 
-    gint64 *task_id_p = gp_task_id_p;
-    *task_id_p = values[0] ? g_ascii_strtoll(values[0], NULL, 10) : 0;
-
-    return 0;
-}
-
-
+// -----------------------------------------------------------------------------
+/** Pushes the id of the task with the most recent note.
+*/
+// -----------------------------------------------------------------------------
 static void EC_last_active_id(gpointer gp_entry) {
     gint64 task_id;
 
     char *error_message = NULL;
     sqlite3 *connection = get_db_connection();
-    sqlite3_exec(connection, "select task from task_notes order by note desc limit 1", store_task_id, &task_id, &error_message);
+    sqlite3_exec(connection, "select task from task_notes order by note desc limit 1", set_int_cb, &task_id, &error_message);
 
     if (error_message) {
         handle_error(ERR_GENERIC_ERROR);
@@ -741,12 +772,22 @@ static void EC_last_active_id(gpointer gp_entry) {
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Helper to free the sequence values for a hash table.
+*/
+// -----------------------------------------------------------------------------
 void free_hash_sequence_value(gpointer key, gpointer value, gpointer unused) {
     GSequence *seq = value;
     g_sequence_free(seq);
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Prints a task hierarchy recursively.
+*/
+// -----------------------------------------------------------------------------
 static void print_hierarchy(Task *task, GHashTable *parent_children, gint level, gboolean is_last) {
     for (gint i=level-1; i >= 0; i--) {
         printf("     ");
@@ -776,6 +817,12 @@ static void print_hierarchy(Task *task, GHashTable *parent_children, gint level,
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Comparator used to ensure that a sequence of tasks is inserted in the order
+    that it was presented.
+*/
+// -----------------------------------------------------------------------------
 gint compare_task_order(gconstpointer l, gconstpointer r, gpointer gp_task_order_hash) {
     GHashTable *task_order_hash = gp_task_order_hash;
     const Task *l_task = l;
@@ -785,6 +832,7 @@ gint compare_task_order(gconstpointer l, gconstpointer r, gpointer gp_task_order
 
     return l_val - r_val;
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -840,8 +888,9 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
         }
     }
 
-
+    // ---------------------------------
     // Iterate over the nonroot tasks and add them to the parent_children table as children tasks
+    // ---------------------------------
     for (GSequenceIter *iter=g_sequence_get_begin_iter(non_root_tasks);
          !g_sequence_iter_is_end(iter);
          iter = g_sequence_iter_next(iter)) {
@@ -851,7 +900,9 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
         g_sequence_insert_sorted(children, task, compare_task_order, task_order);
     }
 
+    // ---------------------------------
     // Iterate over the root tasks, descending through the parent_child tree, printing each level
+    // ---------------------------------
     printf("\n");
     for (GSequenceIter *iter=g_sequence_get_begin_iter(root_tasks);
          !g_sequence_iter_is_end(iter);
@@ -863,8 +914,9 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
         printf("\n");
     }
 
-
+    // ---------------------------------
     // Clean up
+    // ---------------------------------
     g_hash_table_foreach(parent_children, free_hash_sequence_value, NULL);
     g_sequence_free(seq);
 
@@ -878,6 +930,13 @@ static void EC_print_task_hierarchy(gpointer gp_entry) {
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Pops a task ID and pushes a sequence of tasks in its hierarchy
+
+(task-id -- seq)
+*/
+// -----------------------------------------------------------------------------
 static void EC_hierarchy(gpointer gp_entry) {
     Param *param_task_id = pop_param();
 
@@ -922,39 +981,63 @@ done:
     free_param(param_task_id);
 }
 
+
+
 // -----------------------------------------------------------------------------
-/** Defines the tasks lexicon and adds it to the dictionary.
+/** Defines the tasks lexicon.
 
 The following words are defined for manipulating Tasks:
 
-- tasks-db: This holds the sqlite database connection for tasks
+### Add tasks
+- + (string -- ) Creates a task that's the sibling of *cur-task (or a child if *cur-task is root)
+- ++ (string -- ) Creates a subtask of *cur-task
 
-- +: (string -- ) Creates a task that's the sibling of *cur-task (or a child if *cur-task is root)
-- ++: (string -- ) Creates a subtask of *cur-task
-
+### Set cur-task
 - d ( -- ) Makes the first child of *cur-task the new *cur-task
 - u ( -- ) Makes the parent of *cur-task the new *cur-task
 - g (id -- ) Makes the Task with id the new *cur-task
+- reset ( -- ) Makes root the current task, freeing memory for *cur-task
 
-- is-done! (bool -- ) Marks *cur-task as done/not done
+### Task object getters (used for sorting seq of Tasks)
+- task_id (task -- task task-id) Retrieves task ID from task and pushes onto stack
+- task_value (task -- task value) Retrieves value from task and pushes onto stack
+- task_is-done (task -- task is-done) Retrieves is-done from task and pushes onto stack
+- task_name (task -- task name) Retrieves name from task and pushes onto stack
 
-- [cur-task] ( -- [*cur-task]) Pushes *cur-task onto the stack as a sequence
+### Getters/Setters
+- value (id -- value) Pops task id and pushes value of task
+- value! (id value -- ) Sets value for task with ID
+- is-done (id -- value) Pops task id and pushes is-done of task
+- is-done! (id bool -- ) Sets is-done for a task with ID
+- name (id -- value) Pops task id and pushes name of task
+- name! (id str -- value) Sets name of task with ID
+- m (id parent-id -- ) Updates parent of task
 
-- all ( -- [tasks]) Pushes a sequence of all Tasks onto the stack
-- siblings ( -- [tasks]) Pushes a sequence of all siblings of the *cur-task onto the stack
-- ancestors ( -- [tasks]) Pushes a sequence of all ancestors of the *cur-task onto the stack
-- children ( -- [tasks]) Pushes a sequence of all children of the *cur-task onto the stack
-- level-1 ( -- [tasks]) Pushes a sequence of all children of the root task onto the stack
+### Selecting seq of Tasks
+- [cur-task] ( -- seq) Pushes current task as a task sequence
+- all ( -- seq) Pushes all tasks
+- siblings ( -- seq) Pushes all tasks that are siblings of the cur-task
+- ancestors ( -- seq) Pushes ancestors of cur-task
+- children ( -- seq) Pushes children of cur-task
+- level-1 ( -- seq) Pushes all top level tasks
+- hierarchy (task-id -- seq) Pops task ID and pushes a seq of all tasks descended from it
+- search (str -- seq) Pushes all tasks whose name matches the string
 
-- task-note-ids ( -- [note ids]) Pushes an array of note ids linked to *cur-task
+### Task/Note integration
+- task-note-ids ( -- seq) Pushes all IDs of notes associated with current task
+- link-note (note-id -- ) Connects the current task with the specified note
 
-- incomplete ([tasks] -- [tasks]) Selects only the incomplete tasks
+### Task sequence filters
+- incomplete (seq -- seq) Pops tasks and pushes incomplete ones back
 
-- link-note ( note-id -- )  Links the note with id note-id to *cur-task
+### Printing
+- print-tasks (seq -- ) Pops tasks and prints them as a list
+- print-task-hierarchy (seq -- ) Pops tasks and prints them as a tree
 
-- print-tasks ( [tasks] -- )  Prints a sequence of tasks
-
-- reset ( -- )  Sets *cur-task to root
+### Misc
+- tasks-db - This holds the sqlite database connection for tasks
+- *cur-task - Holds the current task
+- last-active-id ( -- task-id ) Pushes last active task ID onto the stack
 
 */
 // -----------------------------------------------------------------------------

@@ -1,10 +1,19 @@
-/** \file sequence.c
+/** \file ext_sequence.c
 
 \brief Defines words for operating on sequences
 
 */
 
 
+// -----------------------------------------------------------------------------
+/** Helper function to get the value of an object given a word that can extract it.
+
+This pushes the object onto the stack and then executes the word. It then
+pops the value and the object and returns the value.
+
+TODO: Fix 'execute' so it manages the return stack
+*/
+// -----------------------------------------------------------------------------
 static Param *get_sort_value(gconstpointer const_obj, Entry *sort_entry) {
     gpointer obj = (gpointer) const_obj;
 
@@ -16,6 +25,11 @@ static Param *get_sort_value(gconstpointer const_obj, Entry *sort_entry) {
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Comparator for generic objects using a sort word (ascending order)
+*/
+// -----------------------------------------------------------------------------
 static gint sort_sequence_asc_cmp(gconstpointer l, gconstpointer r, gpointer gp_sort_entry) {
     Entry *sort_entry = gp_sort_entry;
     Param *param_l_val = get_sort_value(l, sort_entry);
@@ -24,20 +38,10 @@ static gint sort_sequence_asc_cmp(gconstpointer l, gconstpointer r, gpointer gp_
     gint result = 0;
 
     if (param_l_val->type == 'I') {
-        if (param_l_val->val_int == param_r_val->val_int) {
-            result = 0;
-        }
-        else {
-            result = param_l_val->val_int < param_r_val->val_int ? -1 : 1;
-        }
+        result = param_l_val->val_int - param_r_val->val_int;
     }
     else if (param_l_val->type == 'D') {
-        if (param_l_val->val_double == param_r_val->val_double) {
-            result = 0;
-        }
-        else {
-            result = param_l_val->val_double < param_r_val->val_double ? -1 : 1;
-        }
+        result = param_l_val->val_double - param_r_val->val_double;
     }
     else if (param_l_val->type == 'S') {
         result = g_strcmp0(param_l_val->val_string, param_r_val->val_string);    
@@ -52,11 +56,23 @@ static gint sort_sequence_asc_cmp(gconstpointer l, gconstpointer r, gpointer gp_
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Comparator for generic objects using a sort word (descending order)
+*/
+// -----------------------------------------------------------------------------
 static gint sort_sequence_desc_cmp(gconstpointer l, gconstpointer r, gpointer gp_sort_entry) {
     return -sort_sequence_asc_cmp(l, r, gp_sort_entry);
 }
 
 
+
+// -----------------------------------------------------------------------------
+/** Sorts a sequence using a word that gets the value from an object
+
+(seq sort-word -- seq)
+*/
+// ----------------------------------------------------------------------------
 static void sort_sequence(GCompareDataFunc cmp_func) {
     // Pop the sort word
     Param *param_word = pop_param();
@@ -86,15 +102,33 @@ done:
 
 
 
+// -----------------------------------------------------------------------------
+/** Sorts sequence in ascending order (see sort_sequence)
+*/
+// -----------------------------------------------------------------------------
 static void  EC_ascending(gpointer gp_entry) {
     sort_sequence(sort_sequence_asc_cmp);
 }
 
+
+
+// -----------------------------------------------------------------------------
+/** Sorts sequence in descending order (see sort_sequence)
+*/
+// -----------------------------------------------------------------------------
 static void  EC_descending(gpointer gp_entry) {
     sort_sequence(sort_sequence_desc_cmp);
 }
 
 
+// -----------------------------------------------------------------------------
+/** Defines the sequence lexicon
+
+- ascending (seq sort-word -- seq-sorted) Sorts seq in ascending order
+- descending (seq sort-word -- seq-sorted) Sorts seq in descending order
+
+*/
+// -----------------------------------------------------------------------------
 void EC_add_sequence_lexicon(gpointer gp_entry) {
     add_entry("ascending")->routine = EC_ascending;
     add_entry("descending")->routine = EC_descending;

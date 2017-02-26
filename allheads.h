@@ -23,9 +23,9 @@ for all files so that.
 #include <math.h>
 
 #define MAX_WORD_LEN  128       /**< \brief Longest entry word */
-#define MAX_ID_LEN   16
-#define MAX_INT_LEN   24
-#define MAX_DOUBLE_LEN   6
+#define MAX_ID_LEN   16         /**< \brief Used to convert IDs to strings */
+#define MAX_INT_LEN   24        /**< \brief Used to convert ints to strings */
+#define MAX_DOUBLE_LEN   6      /**< \brief Used to convert doubles to strings */
 
 
 typedef void (*routine_ptr)(gpointer entry);  /**< \brief Function pointer type for the routine of an Entry */

@@ -16,6 +16,8 @@ void create_stack_r() {
     _return_stack = g_queue_new();
 }
 
+
+
 // -----------------------------------------------------------------------------
 /** Clears all items from the return stack.
 
@@ -27,6 +29,8 @@ void clear_stack_r() {
     g_queue_clear(_return_stack);
 }
 
+
+
 // -----------------------------------------------------------------------------
 /** Frees memory for a return stack
 */
@@ -34,6 +38,7 @@ void clear_stack_r() {
 void destroy_stack_r() {
     g_queue_free(_return_stack);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -44,6 +49,7 @@ void destroy_stack_r() {
 void push_param_r(GSequenceIter* param) {
     g_queue_push_tail(_return_stack, param);
 }
+
 
 
 // -----------------------------------------------------------------------------

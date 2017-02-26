@@ -20,6 +20,7 @@ void create_stack() {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Helper function used to free a parameter
 */
@@ -27,6 +28,7 @@ void create_stack() {
 static void _free_param(gpointer param, gpointer unused) {
     free_param(param);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -37,6 +39,8 @@ void clear_stack() {
     g_queue_foreach(_stack, _free_param, NULL);
     g_queue_clear(_stack);
 }
+
+
 
 // -----------------------------------------------------------------------------
 /** Frees memory for a stack
@@ -50,6 +54,7 @@ void destroy_stack() {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Pushes a param onto the stack.
 
@@ -58,6 +63,7 @@ void destroy_stack() {
 void push_param(Param* param) {
     g_queue_push_tail(_stack, param);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -73,6 +79,7 @@ Param *pop_param() {
 
     return g_queue_pop_tail(_stack);
 }
+
 
 
 // -----------------------------------------------------------------------------

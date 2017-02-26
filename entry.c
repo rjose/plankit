@@ -1,12 +1,10 @@
-/** \file
+/** \file entry.c
 
 \brief Functions for creating, manipulating, executing, and destroying Entry objects.
 
 Entry objects are elements of a Dictionary. When tokens are parsed from input,
 they are looked up in the _dictionary. If a corresponding Entry is found, it
 is executed.
-
-
 */
 
 
@@ -20,6 +18,7 @@ void execute(gpointer gp_entry) {
     Entry *entry = gp_entry;
     entry->routine(entry);
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -96,6 +95,7 @@ void compile(Token token) {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Allocates memory for an Entry and returns a pointer to it
 
@@ -104,7 +104,6 @@ void compile(Token token) {
 When an Entry is destroyed, all of its params are freed using free_param.
 That means that parameters from the stack that are added to an entry
 can be considered managed by that entry.
-
 */
 // -----------------------------------------------------------------------------
 Entry *new_entry() {
@@ -116,6 +115,7 @@ Entry *new_entry() {
 }
 
 
+
 // -----------------------------------------------------------------------------
 /** Adds a parameter to an entry.
 
@@ -123,12 +123,12 @@ Entry *new_entry() {
 \param param: Param to add
 
 \note The param should be dynamically allocated because the Entry will free it.
-
 */
 // -----------------------------------------------------------------------------
 void add_entry_param(Entry *entry, Param *param) {
     g_sequence_append(entry->params, param);
 }
+
 
 
 // -----------------------------------------------------------------------------

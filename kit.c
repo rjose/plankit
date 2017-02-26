@@ -88,14 +88,20 @@ int main(int argc, char *argv[]) {
     build_dictionary();
     create_stack();
     create_stack_r();
+
+    // Open input file if specified; otherwise stdin
     if (argc > 1) {
         input_file = fopen(argv[1], "r");
         if (!input_file) {
             fprintf(stderr, "Unable to open file: %s\n", argv[1]);
             exit(1);
         }
-        yyin = input_file;
+        scan_file(input_file);
     }
+    else {
+        scan_file(stdin);
+    }
+
 
     // Control loop
     while(!_quit) {
@@ -125,6 +131,8 @@ int main(int argc, char *argv[]) {
     destroy_dictionary();
     destroy_stack();
     destroy_stack_r();
+
+    destroy_input_stack();
     yylex_destroy();
 
     if (input_file) fclose(input_file);

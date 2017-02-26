@@ -26,8 +26,9 @@ extern void yyrestart(FILE *file);
 extern int yylex_destroy();  /**< \brief Gets next token from the input stream */
 extern FILE* yyin;           /**< \brief Points to the input stream */
 extern char *yytext;         /**< \brief Current token */
-
-
+extern void scan_string(const char* str);
+extern void scan_file(FILE* file);
+extern void destroy_input_stack();
 
 
 // =============================================================================

@@ -102,12 +102,12 @@ lex-tasks
 
 ## Prints hierarchy of a task
 #  (task-id -- )
-: ph    hierarchy print-task-hierarchy ;
+: ph    hierarchy "task_value" descending print-task-hierarchy ;
 
 
 ## Prints hierarchy of a task (incomplete tasks)
 #  (task-id -- )
-: pih    hierarchy incomplete print-task-hierarchy ;
+: pih    hierarchy incomplete "task_value" descending print-task-hierarchy ;
 
 
 ## Prints ancestors of current task ('w'here)

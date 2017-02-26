@@ -93,12 +93,21 @@ token with type equal to EOF.
 Token get_token() {
     Token result;
     result.type = yylex();
-    if (result.type == 'S') {
-        g_strlcpy(result.word, yytext, MAX_WORD_LEN);
+
+    switch(result.type) {
+        case 'S': case 'I': case 'D': case 'W':
+            g_strlcpy(result.word, yytext, MAX_WORD_LEN);
+            break;
+
+        case EOF:
+            g_strlcpy(result.word, "EOF", MAX_WORD_LEN);
+            break;
+
+        default:
+            g_strlcpy(result.word, "?", MAX_WORD_LEN);
+            break;
     }
-    else {
-        g_strlcpy(result.word, yytext, MAX_WORD_LEN);
-    }
+
     return result;
 }
 

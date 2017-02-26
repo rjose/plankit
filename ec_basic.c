@@ -64,7 +64,7 @@ static void EC_quit(gpointer gp_entry) {
 */
 // -----------------------------------------------------------------------------
 static void EC_interactive(gpointer gp_entry) {
-    yyrestart(stdin);
+    scan_file(stdin);
 }
 
 

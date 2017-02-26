@@ -509,7 +509,7 @@ static void EC_incomplete(gpointer gp_entry) {
     while (!g_sequence_iter_is_end(iter)) {
         Task *task = g_sequence_get(iter);
 
-        if (!task->is_done) {
+        if (task && !task->is_done) {
             g_sequence_append(incomplete, copy_task(task));
         }
         iter = g_sequence_iter_next(iter);

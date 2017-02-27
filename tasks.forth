@@ -40,26 +40,25 @@ lex-tasks
 # Integrate with notes
 # ======================================
 
-## Redefine N, S, M, E to link the note to the current task
-: N    N
-       notes-db @ sqlite3-last-id
-       link-note
+## Redefines a note word like N, S, M, and E so that they link the note to the
+#  current task.
+#
+# (note-word -- )
+: redefine-note-word
+       "pop
+        : `0   `0
+                notes-db @ sqlite3-last-id
+                link-note
+        ;" ,
 ;
 
-: S    S
-       notes-db @ sqlite3-last-id
-       link-note
-;
+"N" redefine-note-word
+"S" redefine-note-word
+"M" redefine-note-word
+"E" redefine-note-word
 
-: M    M
-       notes-db @ sqlite3-last-id
-       link-note
-;
-
-: E    E
-       notes-db @ sqlite3-last-id
-       link-note
-;
+# TODO: Implement this next
+# [ "N" "S" "M" "E" ] "redefine-note-word" map
 
 
 # ======================================
@@ -164,6 +163,14 @@ lex-tasks
     refresh-cur-task
     "Marking task incomplete" N
 ;
+
+## Marks specified task as done
+#  (task-id -- )
+: X   1 is-done! ;
+
+## Marks specified task as undone
+#  (task-id -- )
+: /X   0 is-done! ;
 
 
 # ======================================

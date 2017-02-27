@@ -11,6 +11,7 @@ void find_and_execute(const gchar *word);
 int set_double_cb(gpointer gp_double_ref, int num_cols, char **values, char **cols);
 int set_int_cb(gpointer gp_int_ref, int num_cols, char **values, char **cols);
 int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **cols);
+void execute_string(const gchar *str);
 
 void EC_push_param0(gpointer gp_entry);
 

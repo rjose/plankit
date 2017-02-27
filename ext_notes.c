@@ -78,8 +78,7 @@ static void free_note(gpointer gp_note) {
 */
 // -----------------------------------------------------------------------------
 static sqlite3 *get_db_connection() {
-    find_and_execute("notes-db");
-    find_and_execute("@");
+    execute_string("notes-db @");
     Param *param_connection = pop_param();
 
     sqlite3 *result = param_connection->val_custom;
@@ -497,7 +496,7 @@ The following words are defined for manipulating notes:
 // -----------------------------------------------------------------------------
 void EC_add_notes_lexicon(gpointer gp_entry) {
     // Add the lexicons that this depends on
-    scan_string("lex-sqlite");
+    execute_string("lex-sqlite");
 
     add_variable("notes-db");
 

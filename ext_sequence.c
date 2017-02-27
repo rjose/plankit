@@ -106,7 +106,7 @@ done:
 /** Sorts sequence in ascending order (see sort_sequence)
 */
 // -----------------------------------------------------------------------------
-static void  EC_ascending(gpointer gp_entry) {
+static void EC_ascending(gpointer gp_entry) {
     sort_sequence(sort_sequence_asc_cmp);
 }
 
@@ -116,8 +116,29 @@ static void  EC_ascending(gpointer gp_entry) {
 /** Sorts sequence in descending order (see sort_sequence)
 */
 // -----------------------------------------------------------------------------
-static void  EC_descending(gpointer gp_entry) {
+static void EC_descending(gpointer gp_entry) {
     sort_sequence(sort_sequence_desc_cmp);
+}
+
+
+// -----------------------------------------------------------------------------
+/** Gets length of sequence
+
+(seq -- seq int)
+*/
+// -----------------------------------------------------------------------------
+static void EC_len(gpointer gp_entry) {
+    const Param *param_seq = top();
+
+    GSequence *seq = param_seq->val_custom;
+    push_param(new_int_param(g_sequence_get_length(seq)));
+}
+
+
+static void EC_pop_seq(gpointer gp_entry) {
+    Param *param_seq = pop_param();
+    g_sequence_free(param_seq->val_custom);
+    free_param(param_seq);
 }
 
 
@@ -132,4 +153,7 @@ static void  EC_descending(gpointer gp_entry) {
 void EC_add_sequence_lexicon(gpointer gp_entry) {
     add_entry("ascending")->routine = EC_ascending;
     add_entry("descending")->routine = EC_descending;
+
+    add_entry("len")->routine = EC_len;
+    add_entry("pop-seq")->routine = EC_pop_seq;
 }

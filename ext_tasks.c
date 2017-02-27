@@ -66,8 +66,7 @@ static Task *copy_task(Task *src) {
 */
 // -----------------------------------------------------------------------------
 static Task *get_cur_task() {
-    find_and_execute("*cur-task");
-    find_and_execute("@");
+    execute_string("*cur-task @");
     Param *param_task = pop_param();
     Task *result = param_task->val_custom;
 
@@ -91,8 +90,7 @@ static void set_cur_task(Task *task) {
 
     Param *param_new = new_custom_param(task, "Task");
     push_param(param_new);
-    find_and_execute("*cur-task");
-    find_and_execute("!");
+    execute_string("*cur-task !");
 }
 
 
@@ -117,8 +115,7 @@ static gint64 get_cur_task_id() {
 */
 // -----------------------------------------------------------------------------
 static sqlite3 *get_db_connection() {
-    find_and_execute("tasks-db");
-    find_and_execute("@");
+      execute_string("tasks-db @");
     Param *param_connection = pop_param();
 
     sqlite3 *result = param_connection->val_custom;
@@ -312,7 +309,7 @@ static void EC_up(gpointer gp_entry) {
 
     Param *param_int = new_int_param(cur_task->parent_id);
     push_param(param_int);
-    find_and_execute("g");
+    execute_string("g");
 }
 
 
@@ -1043,8 +1040,8 @@ The following words are defined for manipulating Tasks:
 // -----------------------------------------------------------------------------
 void EC_add_tasks_lexicon(gpointer gp_entry) {
     // Add the lexicons that this depends on
-    scan_string("lex-sequence");
-    scan_string("lex-sqlite");
+    execute_string("lex-sequence");
+    execute_string("lex-sqlite");
 
     add_variable("tasks-db");
 

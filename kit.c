@@ -29,7 +29,7 @@ Any words that were dictionary entries would already have been handled.
 \param token: Token to convert and push
 */
 // -----------------------------------------------------------------------------
-static void push_token(Token token) {
+void push_token(Token token) {
     // Can't push a Word token
     if (token.type == 'W') {
         handle_error(ERR_UNKNOWN_WORD);
@@ -108,6 +108,7 @@ int main(int argc, char *argv[]) {
         Token token = get_token();
 
         if (token.type == EOF) break;
+        if (token.type == '^') continue;
 
         // If, executing...
         if (_mode == 'E') {
@@ -124,7 +125,6 @@ int main(int argc, char *argv[]) {
         else {
             compile(token);
         }
-
     }
 
     // Clean up

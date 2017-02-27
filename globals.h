@@ -68,3 +68,4 @@ extern gboolean _quit;
 const gchar *error_type_to_string(gint error_type);
 Token get_token();
 void handle_error(gint error_type);
+void push_token(Token token);

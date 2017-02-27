@@ -22,7 +22,7 @@ DIGIT  [0-9]
 
 [[:space:]]+           /* Skip whitespace */
 
--?{DIGIT}+               {return 'I';}
+-?{DIGIT}+             {return 'I';}
 {DIGIT}+"."{DIGIT}*    {return 'D';}
 [^[:space:]]+          {return 'W';}
 
@@ -39,6 +39,7 @@ DIGIT  [0-9]
                            }
                            else {
                                yy_switch_to_buffer(input_stack[input_stack_ptr-1]);
+                               return '^';
                            }
                        }
 

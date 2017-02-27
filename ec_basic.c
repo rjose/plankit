@@ -29,25 +29,6 @@ void add_variable(const gchar *word) {
 
 
 // -----------------------------------------------------------------------------
-/** Convenience function to execute a word from the dictionary.
-
-\note This function is only valid for builtin words, constants, or variables because
-      it does not properly manage the return stack.
-*/
-// -----------------------------------------------------------------------------
-void find_and_execute(const gchar *word) {
-    Entry *entry = find_entry(word);
-    if (!entry) {
-        handle_error(ERR_UNKNOWN_WORD);
-        fprintf(stderr, "---->%s\n", word);
-        return;
-    }
-    execute(entry);
-}
-
-
-
-// -----------------------------------------------------------------------------
 /** Sets the _quit flag so the main control loop stops.
 */
 // -----------------------------------------------------------------------------
@@ -578,6 +559,35 @@ int set_string_cb(gpointer gp_char_p_ref, int num_cols, char **values, char **co
 }
 
 
+void execute_string(const gchar *str) {
+    Entry *entry;
+    scan_string(str);
+
+    while(1) {
+        // TODO: Make this into a function and share with kit.c
+        Token token = get_token();
+
+        if (token.type == EOF) break;
+        if (token.type == '^') break;
+
+        // If, executing...
+        if (_mode == 'E') {
+            entry = find_entry(token.word);
+            if (entry) {
+                execute(entry);
+            }
+            else {
+                push_token(token);
+            }
+        }
+
+        // ...otherwise, we're compiling
+        else {
+            compile(token);
+        }
+    }
+}
+
 
 // -----------------------------------------------------------------------------
 /** Creates a new string with parameters substituted
@@ -667,7 +677,8 @@ static void EC_execute_string(gpointer gp_entry) {
     gchar *str = macro_substitute(param_string->val_string);
     free_param(param_string);
 
-    scan_string(str);
+    //scan_string(str);
+    execute_string(str);
     g_free(str);
 }
 
